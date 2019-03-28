@@ -281,6 +281,14 @@ class StarCraft2EnvMulti(StarCraft2Env):
         sc_action = sc_pb.Action(action_raw=r_pb.ActionRaw(unit_command=cmd))
         return sc_action
 
+    def get_avail_actions(self):
+        """Returns the available actions of all agents in a list."""
+        avail_actions = []
+        for agent_id in range(self.n_agents + self.n_enemies):
+            avail_agent = self.get_avail_agent_actions(agent_id)
+            avail_actions.append(avail_agent)
+        return avail_actions
+
     def reward_battle(self):
         """Reward function when self.reward_spare==False.
         Returns accumulative hit/shield point damage dealt to the enemy
