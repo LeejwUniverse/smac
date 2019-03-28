@@ -4,12 +4,11 @@ from __future__ import print_function
 
 import numpy as np
 
-from smac.env import StarCraft2Env
+from smac.env.starcraft2.starcraft2multi import StarCraft2EnvMulti
 
 
 def main():
-    env = StarCraft2Env(map_name="3m_multi_close", heuristic_enemy=False,
-                        window_size_x=1024, window_size_y=600, debug=True, obs_last_action=True)
+    env = StarCraft2EnvMulti(map_name="3m_multi_close")
 
     env_info = env.get_env_info()
 
