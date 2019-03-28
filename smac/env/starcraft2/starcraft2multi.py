@@ -72,7 +72,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
         join_resquests.append(join)
 
         ports_copy = ports[:]
-        join = sc_pb.RequestJoinGame(race=races[self._enemy_race],
+        join = sc_pb.RequestJoinGame(race=races[self._bot_race],
                                      options=interface_options)
         join.shared_port = 0  # unused
         join.server_ports.game_port = ports_copy.pop(0)
@@ -190,7 +190,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
         self._episode_steps += 1
 
         # Update units
-        game_end_code = self.update_units_multi()
+        game_end_code = self.update_units()
 
         terminated = False
         reward = self.reward_battle()
@@ -614,21 +614,19 @@ class StarCraft2EnvMulti(StarCraft2Env):
                 enemy_state[e_id, 2] = (
                                                y - center_y
                                        ) / self.max_distance_y  # relative Y
-                if self.heuristic_enemy:
-                    ind = 3
+
+                ind = 4
+                max_cd = self.unit_max_cooldown(e_unit)
+                if (
+                        self.map_type == "MMM"
+                        and e_unit.unit_type == self.medivac_id
+                ):
+                    ally_state[
+                        e_id, 1] = e_unit.energy / max_cd  # energy
                 else:
-                    ind = 4
-                    max_cd = self.unit_max_cooldown(e_unit)
-                    if (
-                            self.map_type == "MMM"
-                            and e_unit.unit_type == self.medivac_id
-                    ):
-                        ally_state[
-                            e_id, 1] = e_unit.energy / max_cd  # energy
-                    else:
-                        ally_state[e_id, 1] = (
-                                e_unit.weapon_cooldown / max_cd
-                        )  # cooldown
+                    ally_state[e_id, 1] = (
+                            e_unit.weapon_cooldown / max_cd
+                    )  # cooldown
 
                 if self.shield_bits_enemy > 0:
                     max_shield = self.unit_max_shield(e_unit)
@@ -657,8 +655,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
 
     def get_obs_size(self):
         """
-        Returns the size of the observation.
-        if self.heuristic_enemy == False, returns two sizes (oen for each team)
+        Returns the sizes of the observation.
+        Due to unit_type_bits, enemy observation can differ from ally ones.
         """
         nf_al = 4 + self.unit_type_bits
         nf_en = 4 + self.unit_type_bits
@@ -917,5 +915,4 @@ class StarCraft2EnvMulti(StarCraft2Env):
     def get_env_info(self):
         env_info = super().get_env_info()
         env_info["n_enemies"] = self.n_enemies
-
         return env_info
