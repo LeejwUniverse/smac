@@ -1,3 +1,9 @@
 __pycache__/
 
 \.idea/
+
+SMAC\.egg-info/
+
+dist/SMAC-0\.1\.0b1-py3\.6\.egg
+
+build/
