@@ -155,6 +155,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
         self.force_restarts += 1
 
     def step(self, actions):
+        actions = [int(a) for a in actions]
+
         self.last_action = np.eye(self.n_actions)[np.array(actions)]
 
         # Collect individual actions
@@ -179,9 +181,13 @@ class StarCraft2EnvMulti(StarCraft2Env):
                     in enumerate(zip(self._controller, req_actions_all)):
                 controller.actions(req_actions)
                 # Make step in SC2, i.e. apply actions
-                controller.step(self._step_mul)
-                # Observe here so that we know if the episode is over.
-                self._obs[idx_] = controller.observe()
+            if self._step_mul is not None:
+                for _ in range(self._step_mul):
+                    for c in self._controller:
+                        c.step()
+            # Observe here so that we know if the episode is over.
+            for idx_, c in enumerate(self._controller):
+                self._obs[idx_] = c.observe()
         except (protocol.ProtocolError, protocol.ConnectionError):
             self.full_restart()
             return 0, True, {}
