@@ -239,7 +239,14 @@ class StarCraft2EnvMulti(StarCraft2Env):
 
         if self.reward_scale:
             reward /= self.max_reward / self.reward_scale_rate
-        return reward, terminated, info
+
+        reward_all = []
+        for _ in range(self.n_agents):
+            reward_all.append(reward[0])
+        for _ in range(self.n_enemies):
+            reward_all.append(reward[1])
+
+        return reward_all, terminated, info
 
     def get_agent_action(self, a_id, action):
         if action <= 5:
