@@ -200,7 +200,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
 
         terminated = False
         reward = self.reward_battle()
-        info = {"battle_won": False}
+        info = {"battle_won_team_1": False,
+                "battle_won_team_2": False}
 
         if game_end_code is not None:
             # Battle is over
@@ -208,7 +209,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
             self.battles_game += 1
             if game_end_code == 1:
                 self.battles_won += 1
-                info["battle_won"] = True
+                info["battle_won_team_1"] = True
                 if not self.reward_sparse:
                     reward[0] += self.reward_win
                     reward[1] += self.reward_defeat
@@ -216,6 +217,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
                     reward[0] = 1
                     reward[1] = -1
             elif game_end_code == -1:
+                info["battle_won_team_2"] = True
                 if not self.reward_sparse:
                     reward[0] += self.reward_defeat
                     reward[1] += self.reward_win
