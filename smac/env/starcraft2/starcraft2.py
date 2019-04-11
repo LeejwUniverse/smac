@@ -70,6 +70,7 @@ class StarCraft2Env(MultiAgentEnv):
         game_version=None,
         seed=None,
         continuing_episode=False,
+        sight_range=9,
         obs_all_health=True,
         obs_own_health=True,
         obs_last_action=False,
@@ -114,6 +115,8 @@ class StarCraft2Env(MultiAgentEnv):
         continuing_episode : bool, optional
             Whether to consider episodes continuing or finished after time
             limit is reached (default is False).
+        sight_range = int, optional
+            Define the unit sight of range. (default is 9).
         obs_all_health : bool, optional
             Agents receive the health of all units (in the sight range) as part
             of observations (default is True).
@@ -209,6 +212,7 @@ class StarCraft2Env(MultiAgentEnv):
         self.reward_scale_rate = reward_scale_rate
 
         # Other
+        self.sight_range = sight_range
         self.game_version = game_version
         self.continuing_episode = continuing_episode
         self.seed = seed
@@ -599,7 +603,7 @@ class StarCraft2Env(MultiAgentEnv):
 
     def unit_sight_range(self, agent_id):
         """Returns the sight range for an agent."""
-        return 9
+        return self.sight_range
 
     def unit_max_cooldown(self, unit):
         """Returns the maximal cooldown for a unit."""
