@@ -21,7 +21,7 @@ def main():
         env.reset()
 
         terminated = False
-        episode_reward = np.zeros(2)
+        episode_reward = np.zeros(n_agents_p1+n_agents_p2)
         cpt = 0
         while not terminated:
             cpt += 1
@@ -45,7 +45,7 @@ def main():
             episode_reward += reward
 
         print("Total time duration          {}".format(cpt))
-        print("Total reward in episode {} = {}".format(e, episode_reward))
+        print("Rewards in episode {} = {}".format(e, episode_reward))
     env.close()
 
 
