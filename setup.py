@@ -25,8 +25,8 @@ setup(
     long_description=description,
     author='WhiRL',
     author_email='mikayel@samvelyan.com',
-    license='Apache License, Version 2.0',
-    keywords='StarCraft AI, Multi-Agent Reinforcement Learning',
+    license='MIT License',
+    keywords='StarCraft, Multi-Agent Reinforcement Learning',
     url='https://github.com/oxwhirl/smac',
     packages=[
         'smac',
@@ -38,8 +38,8 @@ setup(
         'smac.examples.rllib'
     ],
     install_requires=[
-        'pysc2>=2.0.2',
-        's2clientprotocol>=4.6.0.67926.0',
+        'pysc2>=3.0.0',
+        's2clientprotocol>=4.10.1.75800.0',
         'absl-py>=0.1.0',
         'numpy>=1.10',
     ],

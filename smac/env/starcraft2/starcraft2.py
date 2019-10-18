@@ -64,7 +64,7 @@ class StarCraft2Env(MultiAgentEnv):
     def __init__(
         self,
         map_name="8m",
-        step_mul=None,
+        step_mul=8,
         move_amount=2,
         difficulty="7",
         game_version=None,
@@ -77,7 +77,9 @@ class StarCraft2Env(MultiAgentEnv):
         obs_pathing_grid=False,
         obs_terrain_height=False,
         obs_instead_of_state=False,
+        obs_timestep_number=False,
         state_last_action=True,
+        state_timestep_number=False,
         reward_sparse=False,
         reward_only_positive=True,
         reward_death_value=10,
@@ -90,6 +92,7 @@ class StarCraft2Env(MultiAgentEnv):
         replay_prefix="",
         window_size_x=1920,
         window_size_y=1200,
+        heuristic_ai=False,
         debug=False,
     ):
         """
@@ -101,7 +104,7 @@ class StarCraft2Env(MultiAgentEnv):
             The name of the SC2 map to play (default is "8m"). The full list
             can be found by running bin/map_list.
         step_mul : int, optional
-            How many game steps per agent step (default is None). None
+            How many game steps per agent step (default is 8). None
             indicates to use the default map step_mul.
         move_amount : float, optional
             How far away units are ordered to move per step (default is 2).
@@ -135,9 +138,15 @@ class StarCraft2Env(MultiAgentEnv):
         obs_instead_of_state : bool, optional
             Use combination of all agents' observations as the global state
             (default is False).
+        obs_timestep_number : bool, optional
+            Whether observations include the current timestep of the episode
+            (default is False).
         state_last_action : bool, optional
             Include the last actions of all agents as part of the global state
             (default is True).
+        state_timestep_number : bool, optional
+            Whether the state include the current timestep of the episode
+            (default is False).
         reward_sparse : bool, optional
             Receive 1/-1 reward for winning/loosing an episode (default is
             False). Whe rest of reward parameters are ignored if True.
@@ -174,6 +183,8 @@ class StarCraft2Env(MultiAgentEnv):
             The length of StarCraft II window size (default is 1920).
         window_size_y: int, optional
             The height of StarCraft II window size (default is 1200).
+        heuristic_ai: bool, optional
+            Whether or not to use a non-learning heuristic AI (default False).
         debug: bool, optional
             Log messages about observations, state, actions and rewards for
             debugging purposes (default is False).
@@ -195,7 +206,9 @@ class StarCraft2Env(MultiAgentEnv):
         self.obs_last_action = obs_last_action
         self.obs_pathing_grid = obs_pathing_grid
         self.obs_terrain_height = obs_terrain_height
+        self.obs_timestep_number = obs_timestep_number
         self.state_last_action = state_last_action
+        self.state_timestep_number = state_timestep_number
         if self.obs_all_health:
             self.obs_own_health = True
         self.n_obs_pathing = 8
@@ -215,7 +228,8 @@ class StarCraft2Env(MultiAgentEnv):
         self.sight_range = sight_range
         self.game_version = game_version
         self.continuing_episode = continuing_episode
-        self.seed = seed
+        self._seed = seed
+        self.heuristic_ai = heuristic_ai
         self.debug = debug
         self.window_size = (window_size_x, window_size_y)
         self.replay_dir = replay_dir
@@ -273,14 +287,12 @@ class StarCraft2Env(MultiAgentEnv):
 
     def _launch(self):
         """Launch the StarCraft II game."""
-        self._run_config = run_configs.get()
+        self._run_config = run_configs.get(version=self.game_version)
         _map = maps.get(self.map_name)
 
         # Setting up the interface
         interface_options = sc_pb.InterfaceOptions(raw=True, score=False)
-
-        self._sc2_proc = self._run_config.start(game_version=self.game_version,
-                                                window_size=self.window_size)
+        self._sc2_proc = self._run_config.start(window_size=self.window_size)
         self._controller = self._sc2_proc.controller
 
         # Request to create the game
@@ -289,7 +301,7 @@ class StarCraft2Env(MultiAgentEnv):
                 map_path=_map.path,
                 map_data=self._run_config.map_data(_map.path)),
             realtime=False,
-            random_seed=self.seed)
+            random_seed=self._seed)
         create.player_setup.add(type=sc_pb.Participant)
         create.player_setup.add(type=sc_pb.Computer, race=races[self._bot_race],
                                 difficulty=difficulties[self.difficulty])
@@ -307,11 +319,20 @@ class StarCraft2Env(MultiAgentEnv):
         self.max_distance_y = map_play_area_max.y - map_play_area_min.y
         self.map_x = map_info.map_size.x
         self.map_y = map_info.map_size.y
+
+        if map_info.pathing_grid.bits_per_pixel == 1:
+            vals = np.array(list(map_info.pathing_grid.data)).reshape(
+                self.map_x, int(self.map_y / 8))
+            self.pathing_grid = np.transpose(np.array([
+                [(b >> i) & 1 for b in row for i in range(7, -1, -1)]
+                for row in vals], dtype=np.bool))
+        else:
+            self.pathing_grid = np.invert(np.flip(np.transpose(np.array(
+                list(map_info.pathing_grid.data), dtype=np.bool).reshape(
+                    self.map_x, self.map_y)), axis=1))
+
         self.terrain_height = np.flip(
             np.transpose(np.array(list(map_info.terrain_height.data))
-                .reshape(self.map_x, self.map_y)), 1) / 255
-        self.pathing_grid = np.flip(
-            np.transpose(np.array(list(map_info.pathing_grid.data))
                 .reshape(self.map_x, self.map_y)), 1) / 255
 
     def reset(self):
@@ -330,8 +351,13 @@ class StarCraft2Env(MultiAgentEnv):
         self.death_tracker_enemy = np.zeros(self.n_enemies)
         self.previous_ally_units = None
         self.previous_enemy_units = None
+        self.win_counted = False
+        self.defeat_counted = False
 
         self.last_action = np.zeros((self.n_agents, self.n_actions))
+
+        if self.heuristic_ai:
+            self.heuristic_targets = [None] * self.n_agents
 
         try:
             self._obs = self._controller.observe()
@@ -374,7 +400,10 @@ class StarCraft2Env(MultiAgentEnv):
             logging.debug("Actions".center(60, "-"))
 
         for a_id, action in enumerate(actions):
-            agent_action = self.get_agent_action(a_id, action)
+            if not self.heuristic_ai:
+                agent_action = self.get_agent_action(a_id, action)
+            else:
+                agent_action = self.get_agent_action_heuristic(a_id, action)
             if agent_action:
                 sc_actions.append(agent_action)
 
@@ -404,14 +433,16 @@ class StarCraft2Env(MultiAgentEnv):
             # Battle is over
             terminated = True
             self.battles_game += 1
-            if game_end_code == 1:
+            if game_end_code == 1 and not self.win_counted:
                 self.battles_won += 1
+                self.win_counted = True
                 info["battle_won"] = True
                 if not self.reward_sparse:
                     reward += self.reward_win
                 else:
                     reward = 1
-            elif game_end_code == -1:
+            elif game_end_code == -1 and not self.defeat_counted:
+                self.defeat_counted = True
                 if not self.reward_sparse:
                     reward += self.reward_defeat
                 else:
@@ -527,6 +558,59 @@ class StarCraft2Env(MultiAgentEnv):
             if self.debug:
                 logging.debug("Agent {} {}s unit # {}".format(
                     a_id, action_name, target_id))
+
+        sc_action = sc_pb.Action(action_raw=r_pb.ActionRaw(unit_command=cmd))
+        return sc_action
+
+    def get_agent_action_heuristic(self, a_id, action):
+        unit = self.get_unit_by_id(a_id)
+        tag = unit.tag
+
+        target = self.heuristic_targets[a_id]
+        if unit.unit_type == self.medivac_id:
+            if (target is None or self.agents[target].health == 0 or
+                self.agents[target].health == self.agents[target].health_max):
+                min_dist = math.hypot(self.max_distance_x, self.max_distance_y)
+                min_id = -1
+                for al_id, al_unit in self.agents.items():
+                    if al_unit.unit_type == self.medivac_id:
+                        continue
+                    if (al_unit.health != 0 and
+                        al_unit.health != al_unit.health_max):
+                        dist = self.distance(unit.pos.x, unit.pos.y,
+                                             al_unit.pos.x, al_unit.pos.y)
+                        if dist < min_dist:
+                            min_dist = dist
+                            min_id = al_id
+                self.heuristic_targets[a_id] = min_id
+                if min_id == -1:
+                    self.heuristic_targets[a_id] = None
+                    return None
+            action_id = actions['heal']
+            target_tag = self.agents[self.heuristic_targets[a_id]].tag
+        else:
+            if target is None or self.enemies[target].health == 0:
+                min_dist = math.hypot(self.max_distance_x, self.max_distance_y)
+                min_id = -1
+                for e_id, e_unit in self.enemies.items():
+                    if (unit.unit_type == self.marauder_id and
+                        e_unit.unit_type == self.medivac_id):
+                        continue
+                    if e_unit.health > 0:
+                        dist = self.distance(unit.pos.x, unit.pos.y,
+                                             e_unit.pos.x, e_unit.pos.y)
+                        if dist < min_dist:
+                            min_dist = dist
+                            min_id = e_id
+                self.heuristic_targets[a_id] = min_id
+            action_id = actions['attack']
+            target_tag = self.enemies[self.heuristic_targets[a_id]].tag
+
+        cmd = r_pb.ActionRawUnitCommand(
+            ability_id = action_id,
+            target_unit_tag = target_tag,
+            unit_tags = [tag],
+            queue_command = False)
 
         sc_action = sc_pb.Action(action_raw=r_pb.ActionRaw(unit_command=cmd))
         return sc_action
@@ -650,7 +734,7 @@ class StarCraft2Env(MultiAgentEnv):
         else:
             x, y = int(unit.pos.x - m), int(unit.pos.y)
 
-        if self.check_bounds(x, y) and self.pathing_grid[x, y] == 0:
+        if self.check_bounds(x, y) and self.pathing_grid[x, y]:
             return True
 
         return False
@@ -854,6 +938,10 @@ class StarCraft2Env(MultiAgentEnv):
             )
         )
 
+        if self.obs_timestep_number:
+            agent_obs = np.append(agent_obs,
+                                  self._episode_steps / self.episode_limit)
+
         if self.debug:
             logging.debug("Obs Agent: {}".format(agent_id).center(60, "-"))
             logging.debug("Avail. actions {}".format(
@@ -959,6 +1047,10 @@ class StarCraft2Env(MultiAgentEnv):
         state = np.append(ally_state.flatten(), enemy_state.flatten())
         if self.state_last_action:
             state = np.append(state, self.last_action.flatten())
+        if self.state_timestep_number:
+            state = np.append(state,
+                              self._episode_steps / self.episode_limit)
+
         state = state.astype(dtype=np.float32)
 
         if self.debug:
@@ -982,6 +1074,8 @@ class StarCraft2Env(MultiAgentEnv):
         own_feats = self.unit_type_bits
         if self.obs_own_health:
             own_feats += 1 + self.shield_bits_ally
+        if self.obs_timestep_number:
+            own_feats += 1
 
         if self.obs_last_action:
             nf_al += self.n_actions
@@ -1012,6 +1106,8 @@ class StarCraft2Env(MultiAgentEnv):
 
         if self.state_last_action:
             size += self.n_agents * self.n_actions
+        if self.state_timestep_number:
+            size += 1
 
         return size
 
@@ -1023,7 +1119,15 @@ class StarCraft2Env(MultiAgentEnv):
             if self.map_type == "stalkers_and_zealots":
                 # id(Stalker) = 74, id(Zealot) = 73
                 type_id = unit.unit_type - 73
-            if self.map_type == "bane":
+            elif self.map_type == "colossi_stalkers_zealots":
+                # id(Stalker) = 74, id(Zealot) = 73, id(Colossus) = 4
+                if unit.unit_type == 4:
+                    type_id = 0
+                elif unit.unit_type == 74:
+                    type_id = 1
+                else:
+                    type_id = 2
+            elif self.map_type == "bane":
                 if unit.unit_type == 9:
                     type_id = 0
                 else:
@@ -1099,7 +1203,7 @@ class StarCraft2Env(MultiAgentEnv):
 
     def seed(self):
         """Returns the random seed used by the environment."""
-        return self.seed
+        return self._seed
 
     def render(self):
         """Not implemented."""
@@ -1226,6 +1330,10 @@ class StarCraft2Env(MultiAgentEnv):
         elif self.map_type == "stalkers_and_zealots":
             self.stalker_id = min_unit_type
             self.zealot_id = min_unit_type + 1
+        elif self.map_type == "colossi_stalkers_zealots":
+            self.colossus_id = min_unit_type
+            self.stalker_id = min_unit_type + 1
+            self.zealot_id = min_unit_type + 2
         elif self.map_type == "MMM":
             self.marauder_id = min_unit_type
             self.marine_id = min_unit_type + 1
