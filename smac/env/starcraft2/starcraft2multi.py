@@ -28,7 +28,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
         # https://github.com/deepmind/pysc2/blob/master/pysc2/env/sc2_env.py
 
         n_players = 2
-        self._run_config = run_configs.get()
+        self._run_config = run_configs.get(version=self.game_version)
         self.parallel = run_parallel.RunParallel()
         _map = maps.get(self.map_name)
         interface_options = sc_pb.InterfaceOptions(raw=True, score=False)
@@ -38,7 +38,6 @@ class StarCraft2EnvMulti(StarCraft2Env):
         # Actually launch the game processes.
         self._sc2_proc = [self._run_config.start(
             extra_ports=ports,
-            game_version=self.game_version,
             window_size=self.window_size)
             for _ in range(n_players)]
         self._controller = [p.controller for p in self._sc2_proc]
@@ -52,7 +51,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
                 map_path=_map.path,
                 map_data=self._run_config.map_data(_map.path)),
             realtime=False,
-            random_seed=self.seed)
+            random_seed=self._seed)
 
         for _ in range(n_players):
             create.player_setup.add(type=sc_pb.Participant)
@@ -96,9 +95,16 @@ class StarCraft2EnvMulti(StarCraft2Env):
         self.terrain_height = np.flip(
             np.transpose(np.array(list(map_info.terrain_height.data))
                          .reshape(self.map_x, self.map_y)), 1) / 255
-        self.pathing_grid = np.flip(
-            np.transpose(np.array(list(map_info.pathing_grid.data))
-                         .reshape(self.map_x, self.map_y)), 1) / 255
+        if map_info.pathing_grid.bits_per_pixel == 1:
+            vals = np.array(list(map_info.pathing_grid.data)).reshape(
+                self.map_x, int(self.map_y / 8))
+            self.pathing_grid = np.transpose(np.array([
+                [(b >> i) & 1 for b in row for i in range(7, -1, -1)]
+                for row in vals], dtype=np.bool))
+        else:
+            self.pathing_grid = np.invert(np.flip(np.transpose(np.array(
+                list(map_info.pathing_grid.data), dtype=np.bool).reshape(
+                self.map_x, self.map_y)), axis=1))
 
     def reset(self):
         """Reset the environment. Required after each full episode.
@@ -116,6 +122,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
         self.death_tracker_enemy = np.zeros(self.n_enemies)
         self.previous_ally_units = None
         self.previous_enemy_units = None
+        self.win_counted = False
+        self.defeat_counted = False
 
         self.last_action = np.zeros(
             (self.n_agents + self.n_enemies, self.n_actions))
@@ -207,8 +215,9 @@ class StarCraft2EnvMulti(StarCraft2Env):
             # Battle is over
             terminated = True
             self.battles_game += 1
-            if game_end_code == 1:
+            if game_end_code == 1 and not self.win_counted:
                 self.battles_won += 1
+                self.win_counted = True
                 info["battle_won_team_1"] = True
                 if not self.reward_sparse:
                     reward[0] += self.reward_win
@@ -216,8 +225,9 @@ class StarCraft2EnvMulti(StarCraft2Env):
                 else:
                     reward[0] = 1
                     reward[1] = -1
-            elif game_end_code == -1:
+            elif game_end_code == -1 and not self.defeat_counted:
                 info["battle_won_team_2"] = True
+                self.defeat_counted = True
                 if not self.reward_sparse:
                     reward[0] += self.reward_defeat
                     reward[1] += self.reward_win
@@ -545,7 +555,9 @@ class StarCraft2EnvMulti(StarCraft2Env):
                 own_feats.flatten(),
             )
         )
-
+        if self.obs_timestep_number:
+            agent_obs = np.append(agent_obs,
+                                  self._episode_steps / self.episode_limit)
         if self.debug:
             logging.debug("Obs Agent: {}".format(agent_id).center(60, "-"))
             logging.debug("Avail. actions {}".format(
@@ -665,6 +677,11 @@ class StarCraft2EnvMulti(StarCraft2Env):
         state = np.append(ally_state.flatten(), enemy_state.flatten())
         if self.state_last_action:
             state = np.append(state, self.last_action.flatten())
+
+        if self.state_timestep_number:
+            state = np.append(state,
+                              self._episode_steps / self.episode_limit)
+
         state = state.astype(dtype=np.float32)
 
         if self.debug:
@@ -691,6 +708,9 @@ class StarCraft2EnvMulti(StarCraft2Env):
         own_feats = self.unit_type_bits
         if self.obs_own_health:
             own_feats += 1 + self.shield_bits_ally
+
+        if self.obs_timestep_number:
+            own_feats += 1
 
         if self.obs_last_action:
             nf_al += self.n_actions
@@ -725,6 +745,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
             size += self.n_agents * self.n_actions
             size += self.n_enemies * self.n_actions
 
+        if self.state_timestep_number:
+            size += 1
         return size
 
     def get_avail_agent_actions(self, agent_id):
