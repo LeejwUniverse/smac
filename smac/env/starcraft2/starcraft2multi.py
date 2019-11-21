@@ -364,10 +364,10 @@ class StarCraft2EnvMulti(StarCraft2Env):
                     if not self.reward_only_positive:
                         delta_deaths_enemy -= self.reward_death_value * neg_scale
                     delta_deaths_ally += self.reward_death_value
-                    delta_enemy += prev_health
+                    delta_enemy += prev_health * neg_scale
                 else:
-                    delta_enemy += prev_health - e_unit.health - e_unit.shield
-
+                    delta_enemy += neg_scale * (
+                            prev_health - e_unit.health - e_unit.shield)
         if self.reward_only_positive:
             reward.append(
                 abs(delta_enemy + delta_deaths_ally))  # shield regeneration
