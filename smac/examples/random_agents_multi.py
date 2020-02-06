@@ -8,7 +8,8 @@ from smac.env.starcraft2.starcraft2multi import StarCraft2EnvMulti
 
 
 def main():
-    env = StarCraft2EnvMulti(map_name="3m_multi_close")
+    env = StarCraft2EnvMulti(map_name="3m_multi_close", bool_side=True,
+                             window_size_x=800, window_size_y=600)
 
     env_info = env.get_env_info()
 
@@ -21,13 +22,15 @@ def main():
         env.reset()
 
         terminated = False
-        episode_reward = np.zeros(n_agents_p1+n_agents_p2)
+        episode_reward = np.zeros(n_agents_p1 + n_agents_p2)
         cpt = 0
         while not terminated:
             cpt += 1
             obs = env.get_obs()
             state = env.get_state()
-
+            observations = obs
+            obs_team_1 = observations[:n_agents_p1]
+            obs_team_2 = observations[n_agents_p1:]
             actions = []
             for agent_id in range(n_agents_p1):
                 avail_actions = env.get_avail_agent_actions(agent_id)

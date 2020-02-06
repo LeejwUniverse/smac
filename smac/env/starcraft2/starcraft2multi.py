@@ -17,11 +17,12 @@ from s2clientprotocol import debug_pb2 as d_pb
 
 
 class StarCraft2EnvMulti(StarCraft2Env):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, bool_side=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.max_reward_p2 = (
                 self.n_agents * self.reward_death_value + self.reward_win
         )
+        self.bool_side = bool_side
 
     def _launch(self):
         # Multi player, based on the implement in:
@@ -405,6 +406,10 @@ class StarCraft2EnvMulti(StarCraft2Env):
             else:
                 nf_own += 1 + self.shield_bits_enemy
 
+        if self.bool_side:
+            # One host encoding of the "team id" (left or right start)
+            nf_own += 2
+
         move_feats_len = self.n_actions_move
         if self.obs_pathing_grid:
             move_feats_len += self.n_obs_pathing
@@ -546,7 +551,14 @@ class StarCraft2EnvMulti(StarCraft2Env):
             if self.unit_type_bits > 0:
                 type_id = self.get_unit_type_id(unit, True)
                 own_feats[ind + type_id] = 1
+                ind += 1
 
+            if self.bool_side:
+                if ally_unit:
+                    own_feats[ind] = 1
+                else:
+                    own_feats[ind + 1] = 1
+                ind += 2
         agent_obs = np.concatenate(
             (
                 move_feats.flatten(),
@@ -711,6 +723,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
 
         if self.obs_timestep_number:
             own_feats += 1
+        if self.bool_side:
+            own_feats += 2
 
         if self.obs_last_action:
             nf_al += self.n_actions
