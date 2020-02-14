@@ -199,7 +199,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
                 self._obs[idx_] = c.observe()
         except (protocol.ProtocolError, protocol.ConnectionError):
             self.full_restart()
-            return [0 for _ in actions], True, {}
+            return [0 for _ in actions], True, {"battle_won_team_1": False,
+                "battle_won_team_2": False}
 
         self._total_steps += 1
         self._episode_steps += 1
