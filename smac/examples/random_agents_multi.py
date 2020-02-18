@@ -8,7 +8,7 @@ from smac.env.starcraft2.starcraft2multi import StarCraft2EnvMulti
 
 
 def main():
-    env = StarCraft2EnvMulti(map_name="3m_multi_close", bool_side=True,
+    env = StarCraft2EnvMulti(map_name="3m_multi_close", obs_bool_side=True,
                              window_size_x=800, window_size_y=600)
 
     env_info = env.get_env_info()
