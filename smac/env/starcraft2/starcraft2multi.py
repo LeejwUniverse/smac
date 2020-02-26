@@ -409,7 +409,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
         if self.obs_bool_side:
             # One hot encoding of the "team id"
             nf_own += 2
-
+        if self.obs_own_position:
+            nf_own += 2
         move_feats_len = self.n_actions_move
         if self.obs_pathing_grid:
             move_feats_len += self.n_obs_pathing
@@ -559,6 +560,13 @@ class StarCraft2EnvMulti(StarCraft2Env):
                 else:
                     own_feats[ind + 1] = 1
                 ind += 2
+            if self.obs_own_position:
+                own_feats[ind] = x - (
+                            self.map_x / 2) / self.max_distance_x  # relative X
+                own_feats[ind + 1] = y - (
+                            self.map_y / 2) / self.max_distance_y  # relative Y
+                ind += 2
+
         agent_obs = np.concatenate(
             (
                 move_feats.flatten(),
@@ -668,10 +676,10 @@ class StarCraft2EnvMulti(StarCraft2Env):
                         self.map_type == "MMM"
                         and e_unit.unit_type == self.medivac_id
                 ):
-                    ally_state[
+                    enemy_state[
                         e_id, 1] = e_unit.energy / max_cd  # energy
                 else:
-                    ally_state[e_id, 1] = (
+                    enemy_state[e_id, 1] = (
                             e_unit.weapon_cooldown / max_cd
                     )  # cooldown
 
@@ -687,14 +695,19 @@ class StarCraft2EnvMulti(StarCraft2Env):
                     enemy_state[e_id, ind + type_id] = 1
 
         state = np.append(ally_state.flatten(), enemy_state.flatten())
+        state_enemy = np.append(enemy_state.flatten(), ally_state.flatten())
+
         if self.state_last_action:
             state = np.append(state, self.last_action.flatten())
-
+            last_action_inverse = np.concatenate((self.last_action[self.n_agents:, :],self.last_action[:self.n_agents, :])).flatten()
+            state_enemy = np.append(state_enemy, last_action_inverse.flatten())
         if self.state_timestep_number:
             state = np.append(state,
                               self._episode_steps / self.episode_limit)
-
+            state_enemy = np.append(state_enemy,
+                              self._episode_steps / self.episode_limit)
         state = state.astype(dtype=np.float32)
+        state_enemy = state_enemy.astype(dtype=np.float32)
 
         if self.debug:
             logging.debug("STATE".center(60, "-"))
@@ -703,7 +716,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
             if self.state_last_action:
                 logging.debug("Last actions {}".format(self.last_action))
 
-        return state
+        return state, state_enemy
 
     def get_obs_size(self):
         """
@@ -724,6 +737,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
         if self.obs_timestep_number:
             own_feats += 1
         if self.obs_bool_side:
+            own_feats += 2
+        if self.obs_own_position:
             own_feats += 2
 
         if self.obs_last_action:

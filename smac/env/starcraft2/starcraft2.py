@@ -78,6 +78,7 @@ class StarCraft2Env(MultiAgentEnv):
         obs_terrain_height=False,
         obs_instead_of_state=False,
         obs_bool_side=False,
+        obs_own_position=False,
         obs_timestep_number=False,
         state_last_action=True,
         state_timestep_number=False,
@@ -208,6 +209,7 @@ class StarCraft2Env(MultiAgentEnv):
         self.obs_pathing_grid = obs_pathing_grid
         self.obs_terrain_height = obs_terrain_height
         self.obs_bool_side = obs_bool_side
+        self.obs_own_position = obs_own_position
         self.obs_timestep_number = obs_timestep_number
         self.state_last_action = state_last_action
         self.state_timestep_number = state_timestep_number
@@ -810,7 +812,8 @@ class StarCraft2Env(MultiAgentEnv):
         if self.obs_bool_side:
             # One hot encoding of the "team id"
             nf_own += 2
-
+        if self.obs_own_position:
+            nf_own += 2
         move_feats_len = self.n_actions_move
         if self.obs_pathing_grid:
             move_feats_len += self.n_obs_pathing
@@ -938,6 +941,12 @@ class StarCraft2Env(MultiAgentEnv):
             if self.obs_bool_side:
                 own_feats[ind] = 1
                 ind += 2
+
+            if self.obs_own_position:
+                own_feats[ind] = x - (self.map_x / 2) / self.max_distance_x  # relative X
+                own_feats[ind + 1] = y - (self.map_y / 2) / self.max_distance_y  # relative Y
+                ind += 2
+
 
         agent_obs = np.concatenate(
             (
@@ -1088,7 +1097,8 @@ class StarCraft2Env(MultiAgentEnv):
             own_feats += 1
         if self.obs_bool_side:
             own_feats += 2
-
+        if self.obs_own_position:
+            own_feats += 2
         if self.obs_last_action:
             nf_al += self.n_actions
 
