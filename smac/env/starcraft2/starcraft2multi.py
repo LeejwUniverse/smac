@@ -199,7 +199,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
         except (protocol.ProtocolError, protocol.ConnectionError):
             self.full_restart()
             return [0 for _ in actions], True, {"battle_won_team_1": False,
-                "battle_won_team_2": False}
+                                                "battle_won_team_2": False}
 
         self._total_steps += 1
         self._episode_steps += 1
@@ -382,6 +382,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
         """Returns observation for agent_id.
         NOTE: Agents should have access only to their local observations
         during decentralised execution.
+        NOTE2: here, enemy_feat represent the enemies of agent_id
+        and not the self.enemies
         """
         unit = self.get_unit_by_id(agent_id)
 
@@ -411,6 +413,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
             nf_own += 2
         if self.obs_own_position:
             nf_own += 2
+
         move_feats_len = self.n_actions_move
         if self.obs_pathing_grid:
             move_feats_len += self.n_obs_pathing
@@ -418,14 +421,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
             move_feats_len += self.n_obs_height
 
         move_feats = np.zeros(move_feats_len, dtype=np.float32)
-        if ally_unit:
-            enemy_feats = np.zeros((self.n_enemies, nf_en), dtype=np.float32)
-            ally_feats = np.zeros((self.n_agents - 1, nf_al), dtype=np.float32)
-        else:
-            enemy_feats = np.zeros((self.n_enemies - 1, nf_en),
-                                   dtype=np.float32)
-            ally_feats = np.zeros((self.n_agents, nf_al), dtype=np.float32)
-
+        enemy_feats = np.zeros((self.n_enemies, nf_en), dtype=np.float32)
+        ally_feats = np.zeros((self.n_agents - 1, nf_al), dtype=np.float32)
         own_feats = np.zeros(nf_own, dtype=np.float32)
 
         if unit.health > 0:  # otherwise dead, return all zeros
@@ -448,10 +445,18 @@ class StarCraft2EnvMulti(StarCraft2Env):
 
             if self.obs_terrain_height:
                 move_feats[ind:] = self.get_surrounding_height(unit)
+
             en_ids = [
                 self.n_agents + en_id for en_id in range(self.n_enemies)
                 if ally_unit or (not ally_unit and en_id != own_list_id)
             ]
+            al_ids = [
+                al_id for al_id in range(self.n_agents)
+                if not ally_unit or (ally_unit and al_id != agent_id)
+            ]
+            if not ally_unit:
+                al_ids, en_ids = en_ids, al_ids
+
             # Enemy features
             for e_id, en_id in enumerate(en_ids):
 
@@ -491,16 +496,12 @@ class StarCraft2EnvMulti(StarCraft2Env):
                     if self.unit_type_bits > 0:
                         type_id = self.get_unit_type_id(e_unit, False)
                         enemy_feats[e_id, ind + type_id] = 1  # unit type
+                        ind += self.unit_type_bits
 
                     if not ally_unit and self.obs_last_action:
                         ally_feats[e_id, ind:] = self.last_action[en_id]
 
             # Ally features
-            al_ids = [
-                al_id for al_id in range(self.n_agents)
-                if not ally_unit or (ally_unit and al_id != agent_id)
-            ]
-
             for i, al_id in enumerate(al_ids):
 
                 al_unit = self.get_unit_by_id(al_id)
@@ -562,9 +563,9 @@ class StarCraft2EnvMulti(StarCraft2Env):
                 ind += 2
             if self.obs_own_position:
                 own_feats[ind] = x - (
-                            self.map_x / 2) / self.max_distance_x  # relative X
+                        self.map_x / 2) / self.max_distance_x  # relative X
                 own_feats[ind + 1] = y - (
-                            self.map_y / 2) / self.max_distance_y  # relative Y
+                        self.map_y / 2) / self.max_distance_y  # relative Y
                 ind += 2
 
         agent_obs = np.concatenate(
@@ -586,7 +587,6 @@ class StarCraft2EnvMulti(StarCraft2Env):
             logging.debug("Enemy feats {}".format(enemy_feats))
             logging.debug("Ally feats {}".format(ally_feats))
             logging.debug("Own feats {}".format(own_feats))
-
         return agent_obs
 
     def get_obs(self):
@@ -699,13 +699,17 @@ class StarCraft2EnvMulti(StarCraft2Env):
 
         if self.state_last_action:
             state = np.append(state, self.last_action.flatten())
-            last_action_inverse = np.concatenate((self.last_action[self.n_agents:, :],self.last_action[:self.n_agents, :])).flatten()
+            last_action_inverse = np.concatenate((self.last_action[
+                                                  self.n_agents:, :],
+                                                  self.last_action[
+                                                  :self.n_agents,
+                                                  :])).flatten()
             state_enemy = np.append(state_enemy, last_action_inverse.flatten())
         if self.state_timestep_number:
             state = np.append(state,
                               self._episode_steps / self.episode_limit)
             state_enemy = np.append(state_enemy,
-                              self._episode_steps / self.episode_limit)
+                                    self._episode_steps / self.episode_limit)
         state = state.astype(dtype=np.float32)
         state_enemy = state_enemy.astype(dtype=np.float32)
 
