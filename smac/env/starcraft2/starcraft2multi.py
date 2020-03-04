@@ -168,21 +168,23 @@ class StarCraft2EnvMulti(StarCraft2Env):
         self.last_action = np.eye(self.n_actions)[np.array(actions)]
 
         # Collect individual actions
-        sc_actions = []
+        sc_actions_team_1 = []
+        sc_actions_team_2 = []
         if self.debug:
             logging.debug("Actions".center(60, "-"))
 
         for a_id, action in enumerate(actions):
             agent_action = self.get_agent_action(a_id, action)
             if agent_action:
-                sc_actions.append(agent_action)
+                if a_id < self.n_agents:
+                    sc_actions_team_1.append(agent_action)
+                else:
+                    sc_actions_team_2.append(agent_action)
 
-
-        # Send action request
         req_actions_p1 = sc_pb.RequestAction(
-            actions=sc_actions[:self.n_agents])
+            actions=sc_actions_team_1)
         req_actions_p2 = sc_pb.RequestAction(
-            actions=sc_actions[self.n_agents:])
+            actions=sc_actions_team_2)
         req_actions_all = [req_actions_p1, req_actions_p2]
 
         try:

@@ -487,10 +487,7 @@ class StarCraft2Env(MultiAgentEnv):
             assert unit.health == 0, "No-op only available for dead agents."
             if self.debug:
                 logging.debug("Agent {}: Dead".format(a_id))
-            cmd = r_pb.ActionRawUnitCommand(
-                ability_id=actions["stop"],
-                unit_tags=[tag],
-                queue_command=False)
+            return None
         elif action == 1:
             # stop
             cmd = r_pb.ActionRawUnitCommand(
