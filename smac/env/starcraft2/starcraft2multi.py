@@ -177,6 +177,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
             if agent_action:
                 sc_actions.append(agent_action)
 
+
         # Send action request
         req_actions_p1 = sc_pb.RequestAction(
             actions=sc_actions[:self.n_agents])
@@ -200,7 +201,6 @@ class StarCraft2EnvMulti(StarCraft2Env):
             self.full_restart()
             return [0 for _ in actions], True, {"battle_won_team_1": False,
                                                 "battle_won_team_2": False}
-
         self._total_steps += 1
         self._episode_steps += 1
 
@@ -456,7 +456,6 @@ class StarCraft2EnvMulti(StarCraft2Env):
             ]
             if not ally_unit:
                 al_ids, en_ids = en_ids, al_ids
-
             # Enemy features
             for e_id, en_id in enumerate(en_ids):
 

@@ -14,6 +14,15 @@ class SMACMap(lib.Map):
 
 
 map_param_registry = {
+    "2m": {
+        "n_agents": 2,
+        "n_enemies": 2,
+        "limit": 60,
+        "a_race": "T",
+        "b_race": "T",
+        "unit_type_bits": 0,
+        "map_type": "marines",
+    },
     "3m": {
         "n_agents": 3,
         "n_enemies": 3,
