@@ -728,7 +728,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
             own_feats += 2
 
         if self.obs_last_action:
-            nf_al += self.n_actions
+            last_action_feats = self.n_actions
 
         move_feats = self.n_actions_move
         if self.obs_pathing_grid:
@@ -740,7 +740,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
         ally_feats = self.n_agents * nf_al
         size_for_all = move_feats + enemy_feats + ally_feats + own_feats
 
-        return size_for_all - nf_al, size_for_all - nf_en
+        return size_for_all - nf_al + (self.n_agents-1)*last_action_feats,\
+               size_for_all - nf_en + (self.n_enemies-1)*last_action_feats
 
     def get_state_size(self):
         """Returns the size of the global state."""
