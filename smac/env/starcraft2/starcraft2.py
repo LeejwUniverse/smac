@@ -943,8 +943,8 @@ class StarCraft2Env(MultiAgentEnv):
                 ind += 2
 
             if self.obs_own_position:
-                own_feats[ind] = x - (self.map_x / 2) / self.max_distance_x  # relative X
-                own_feats[ind + 1] = y - (self.map_y / 2) / self.max_distance_y  # relative Y
+                own_feats[ind] = (x - (self.map_x / 2)) / self.max_distance_x  # relative X
+                own_feats[ind + 1] = (y - (self.map_y / 2)) / self.max_distance_y  # relative Y
                 ind += 2
 
 
