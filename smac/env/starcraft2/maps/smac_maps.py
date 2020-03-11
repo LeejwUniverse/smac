@@ -41,6 +41,15 @@ map_param_registry = {
         "unit_type_bits": 0,
         "map_type": "marines",
     },
+    "3m_multi_random_spawn": {
+        "n_agents": 3,
+        "n_enemies": 3,
+        "limit": 180,
+        "a_race": "T",
+        "b_race": "T",
+        "unit_type_bits": 0,
+        "map_type": "marines",
+    },
     "3m_multi_close": {
         "n_agents": 3,
         "n_enemies": 3,
