@@ -174,14 +174,18 @@ class StarCraft2EnvMulti(StarCraft2Env):
         sc_actions_team_2 = []
         if self.debug:
             logging.debug("Actions".center(60, "-"))
-
-        for a_id, action in enumerate(actions):
-            agent_action = self.get_agent_action(a_id, action)
-            if agent_action:
-                if a_id < self.n_agents:
-                    sc_actions_team_1.append(agent_action)
-                else:
-                    sc_actions_team_2.append(agent_action)
+        try:
+            for a_id, action in enumerate(actions):
+                agent_action = self.get_agent_action(a_id, action)
+                if agent_action:
+                    if a_id < self.n_agents:
+                        sc_actions_team_1.append(agent_action)
+                    else:
+                        sc_actions_team_2.append(agent_action)
+        except AssertionError as err:
+            self.full_restart()
+            return [0 for _ in actions], True, {"battle_won_team_1": False,
+                                                "battle_won_team_2": False}
 
         req_actions_p1 = sc_pb.RequestAction(
             actions=sc_actions_team_1)
@@ -411,7 +415,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
             else:
                 nf_own += 1 + self.shield_bits_enemy
 
-        if self.obs_bool_side:
+        if self.obs_bool_team:
             # One hot encoding of the "team id"
             nf_own += 2
         if self.obs_own_position:
@@ -546,7 +550,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
                 own_feats[ind + type_id] = 1
                 ind += 1
 
-            if self.obs_bool_side:
+            if self.obs_bool_team:
                 if ally_unit:
                     own_feats[ind] = 1
                 else:
@@ -722,7 +726,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
 
         if self.obs_timestep_number:
             own_feats += 1
-        if self.obs_bool_side:
+        if self.obs_bool_team:
             own_feats += 2
         if self.obs_own_position:
             own_feats += 2

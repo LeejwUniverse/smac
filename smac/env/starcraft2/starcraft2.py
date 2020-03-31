@@ -77,7 +77,7 @@ class StarCraft2Env(MultiAgentEnv):
         obs_pathing_grid=False,
         obs_terrain_height=False,
         obs_instead_of_state=False,
-        obs_bool_side=False,
+        obs_bool_team=False,
         obs_own_position=False,
         obs_timestep_number=False,
         state_last_action=True,
@@ -140,6 +140,13 @@ class StarCraft2Env(MultiAgentEnv):
         obs_instead_of_state : bool, optional
             Use combination of all agents' observations as the global state
             (default is False).
+        obs_bool_team : bool, optional
+            Whether observations include which team the agent is part of
+            as a one host encoding vector.
+            (default is False)
+        obs_own_position: bool, optional
+            Whether observations include the position of the agent.
+            (default is False)
         obs_timestep_number : bool, optional
             Whether observations include the current timestep of the episode
             (default is False).
@@ -208,7 +215,7 @@ class StarCraft2Env(MultiAgentEnv):
         self.obs_last_action = obs_last_action
         self.obs_pathing_grid = obs_pathing_grid
         self.obs_terrain_height = obs_terrain_height
-        self.obs_bool_side = obs_bool_side
+        self.obs_bool_team = obs_bool_team
         self.obs_own_position = obs_own_position
         self.obs_timestep_number = obs_timestep_number
         self.state_last_action = state_last_action
@@ -809,7 +816,7 @@ class StarCraft2Env(MultiAgentEnv):
         if self.obs_own_health:
             nf_own += 1 + self.shield_bits_ally
 
-        if self.obs_bool_side:
+        if self.obs_bool_team:
             # One hot encoding of the "team id"
             nf_own += 2
         if self.obs_own_position:
@@ -938,7 +945,7 @@ class StarCraft2Env(MultiAgentEnv):
                 type_id = self.get_unit_type_id(unit, True)
                 own_feats[ind + type_id] = 1
 
-            if self.obs_bool_side:
+            if self.obs_bool_team:
                 own_feats[ind] = 1
                 ind += 2
 
@@ -1095,7 +1102,7 @@ class StarCraft2Env(MultiAgentEnv):
             own_feats += 1 + self.shield_bits_ally
         if self.obs_timestep_number:
             own_feats += 1
-        if self.obs_bool_side:
+        if self.obs_bool_team:
             own_feats += 2
         if self.obs_own_position:
             own_feats += 2
