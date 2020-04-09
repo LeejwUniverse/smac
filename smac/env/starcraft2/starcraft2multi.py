@@ -24,6 +24,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
         )
         self.last_action = np.zeros(
             (self.n_agents + self.n_enemies, self.n_actions))
+        self.team_1_heuristic = False
+        self.team_2_heuristic = False
 
     def _launch(self):
         # Multi player, based on the implement in:
@@ -164,9 +166,22 @@ class StarCraft2EnvMulti(StarCraft2Env):
         self._launch()
         self.force_restarts += 1
 
+    def setup_heuristic(self, team_1: bool, team_2: bool):
+        self.team_1_heuristic = team_1
+        self.team_2_heuristic = team_2
+
     def step(self, actions):
         actions = [int(a) for a in actions]
 
+        if self.team_1_heuristic:
+            for i in range(self.n_agents):
+                actions[i] = self.get_heuristic_action(i)
+
+        if self.team_2_heuristic:
+            for i in range(self.n_enemies):
+                actions[self.n_agents + i] = self.get_heuristic_action(
+                    self.n_agents + i)
+                
         self.last_action = np.eye(self.n_actions)[np.array(actions)]
 
         # Collect individual actions
@@ -322,6 +337,69 @@ class StarCraft2EnvMulti(StarCraft2Env):
             avail_agent = self.get_avail_agent_actions(agent_id)
             avail_actions.append(avail_agent)
         return avail_actions
+
+    def get_heuristic_action(self, a_id):
+        """ Returns the action (not a sc2 action)"""
+        agent_avail_actions = self.get_avail_agent_actions(a_id)
+
+        # "Ally"
+        if a_id < self.n_agents:
+            unit = self.get_unit_by_id(a_id)
+            # check if can attack, if yes, attack the closest
+            if unit.health > 0 \
+                    and sum(
+                agent_avail_actions[
+                self.n_actions_no_attack: self.n_actions]) > 0:
+                own_x = unit.pos.x
+                own_y = unit.pos.y
+                # find the closest
+                distance = []
+                for e_id, e_unit in self.enemies.items():
+                    if agent_avail_actions[self.n_actions_no_attack + e_id]:
+                        distance.append(
+                            self.distance(own_x, own_y, e_unit.pos.x,
+                                          e_unit.pos.y))
+                    else:
+                        distance.append(float('Inf'))
+                return self.n_actions_no_attack + distance.index(min(distance))
+            else:
+                # If no one in range, go to right or stop.
+                if agent_avail_actions[4]:
+                    return 4
+                elif agent_avail_actions[1]:
+                    return 1
+                else:
+                    return 0
+        # "Ennemy"
+        else:
+            unit = self.get_unit_by_id(a_id)
+            own_x = unit.pos.x
+            own_y = unit.pos.y
+
+            # check if can attack, if yes, attack the closest
+            if unit.health > 0 \
+                    and sum(
+                agent_avail_actions[
+                self.n_actions_no_attack: self.n_actions]) > 0:
+                # find the closest
+                distance = []
+                for a_id, a_unit in self.agents.items():
+                    if agent_avail_actions[self.n_actions_no_attack + a_id]:
+                        distance.append(
+                            self.distance(own_x, own_y, a_unit.pos.x,
+                                          a_unit.pos.y))
+                    else:
+                        distance.append(float('Inf'))
+                return self.n_actions_no_attack + distance.index(
+                    min(distance))
+            else:
+                # If no one in range, go to right or stop.
+                if agent_avail_actions[5]:
+                    return 5
+                elif agent_avail_actions[1]:
+                    return 1
+                else:
+                    return 0
 
     def reward_battle(self):
         """Reward function when self.reward_spare==False.
@@ -485,7 +563,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
                     ind = 4
                     if self.obs_all_health:
                         # health
-                        enemy_feats[e_id, ind]\
+                        enemy_feats[e_id, ind] \
                             = e_unit.health / e_unit.health_max
                         ind += 1
 
@@ -562,7 +640,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
                 own_feats[ind] = (x - (self.map_x / 2)) \
                                  / self.max_distance_x
                 # relative Y
-                own_feats[ind + 1] = (y - (self.map_y / 2))\
+                own_feats[ind + 1] = (y - (self.map_y / 2)) \
                                      / self.max_distance_y
                 ind += 2
 
@@ -744,8 +822,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
         ally_feats = self.n_agents * nf_al
         size_for_all = move_feats + enemy_feats + ally_feats + own_feats
 
-        return size_for_all - nf_al + (self.n_agents-1)*last_action_feats,\
-               size_for_all - nf_en + (self.n_enemies-1)*last_action_feats
+        return size_for_all - nf_al + (self.n_agents - 1) * last_action_feats, \
+               size_for_all - nf_en + (self.n_enemies - 1) * last_action_feats
 
     def get_state_size(self):
         """Returns the size of the global state."""
