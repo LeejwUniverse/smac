@@ -181,7 +181,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
             for i in range(self.n_enemies):
                 actions[self.n_agents + i] = self.get_heuristic_action(
                     self.n_agents + i)
-                
+
         self.last_action = np.eye(self.n_actions)[np.array(actions)]
 
         # Collect individual actions
@@ -198,9 +198,11 @@ class StarCraft2EnvMulti(StarCraft2Env):
                     else:
                         sc_actions_team_2.append(agent_action)
         except AssertionError as err:
-            self.full_restart()
+            self._episode_count += 1
+            self.reset()
             return [0 for _ in actions], True, {"battle_won_team_1": False,
-                                                "battle_won_team_2": False}
+                                                "battle_won_team_2": False,
+                                                "env_error": True}
 
         req_actions_p1 = sc_pb.RequestAction(
             actions=sc_actions_team_1)
@@ -223,7 +225,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
         except (protocol.ProtocolError, protocol.ConnectionError):
             self.full_restart()
             return [0 for _ in actions], True, {"battle_won_team_1": False,
-                                                "battle_won_team_2": False}
+                                                "battle_won_team_2": False,
+                                                "env_error": True}
         self._total_steps += 1
         self._episode_steps += 1
 
