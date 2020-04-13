@@ -26,6 +26,9 @@ class StarCraft2EnvMulti(StarCraft2Env):
             (self.n_agents + self.n_enemies, self.n_actions))
         self.team_1_heuristic = False
         self.team_2_heuristic = False
+        self.action_error = 0
+        self.battles_won_team_1 = 0
+        self.battles_won_team_2 = 0
 
     def _launch(self):
         # Multi player, based on the implement in:
@@ -199,6 +202,7 @@ class StarCraft2EnvMulti(StarCraft2Env):
                         sc_actions_team_2.append(agent_action)
         except AssertionError as err:
             self._episode_count += 1
+            self.action_error += 1
             self.reset()
             return [0 for _ in actions], True, {"battle_won_team_1": False,
                                                 "battle_won_team_2": False,
@@ -243,8 +247,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
             terminated = True
             self.battles_game += 1
             if game_end_code == 1 and not self.win_counted:
-                self.battles_won += 1
                 self.win_counted = True
+                self.battles_won_team_1 += 1
                 info["battle_won_team_1"] = True
                 if not self.reward_sparse:
                     reward[0] += self.reward_win
@@ -252,9 +256,11 @@ class StarCraft2EnvMulti(StarCraft2Env):
                 else:
                     reward[0] = 1
                     reward[1] = -1
+
             elif game_end_code == -1 and not self.defeat_counted:
-                info["battle_won_team_2"] = True
                 self.defeat_counted = True
+                self.battles_won_team_2 += 1
+                info["battle_won_team_2"] = True
                 if not self.reward_sparse:
                     reward[0] += self.reward_defeat
                     reward[1] += self.reward_win
@@ -1061,3 +1067,16 @@ class StarCraft2EnvMulti(StarCraft2Env):
         env_info = super().get_env_info()
         env_info["n_enemies"] = self.n_enemies
         return env_info
+
+    def get_stats(self):
+        stats = {
+            "won_team_1": self.battles_won_team_1,
+            "won_team_2": self.battles_won_team_2,
+            "battles_draw": self.timeouts,
+            "battles_game": self.battles_game,
+            "timeouts": self.timeouts,
+            "restarts": self.force_restarts,
+            "action_error": self.action_error
+        }
+        return stats
+
