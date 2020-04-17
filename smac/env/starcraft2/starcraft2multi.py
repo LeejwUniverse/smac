@@ -166,8 +166,12 @@ class StarCraft2EnvMulti(StarCraft2Env):
         """Full restart. Closes the SC2 process and launches a new one. """
         for p in self._sc2_proc:
             p.close()
-        self._launch()
-        self.force_restarts += 1
+        try:
+            self._launch()
+            self.force_restarts += 1
+        except:
+            self.full_restart()
+
 
     def setup_heuristic(self, team_1: bool, team_2: bool):
         self.team_1_heuristic = team_1
