@@ -45,7 +45,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
         # Actually launch the game processes.
         self._sc2_proc = [self._run_config.start(
             extra_ports=ports,
-            window_size=self.window_size)
+            window_size=self.window_size,
+            want_rgb=False)
             for _ in range(n_players)]
         self._controller = [p.controller for p in self._sc2_proc]
 
