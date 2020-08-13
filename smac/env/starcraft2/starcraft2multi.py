@@ -358,11 +358,11 @@ class StarCraft2EnvMulti(StarCraft2Env):
                         i)] = pos_team_2[i][1]
                     info["loss_distance_traveled_team_2_agent_" + str(
                         i)] = self.distance_traveled_team_2[i]
-                    info["win_attack_actions_team_2_agent_" + str(
+                    info["loss_attack_actions_team_2_agent_" + str(
                         i)] = self.attack_actions_team_2[i]
-                    info["win_move_actions_team_2_agent_" + str(
+                    info["loss_move_actions_team_2_agent_" + str(
                         i)] = self.move_actions_team_2[i]
-                    info["win_stop_actions_team_2_agent_" + str(
+                    info["loss_stop_actions_team_2_agent_" + str(
                         i)] = self.stop_actions_team_2[i]
 
             elif game_end_code == -1 and not self.defeat_counted:
@@ -398,11 +398,11 @@ class StarCraft2EnvMulti(StarCraft2Env):
                         i)] = pos_team_1[i][1]
                     info["loss_distance_traveled_team_1_agent_" + str(
                         i)] = self.distance_traveled_team_1[i]
-                    info["win_attack_actions_team_1_agent_" + str(
+                    info["loss_attack_actions_team_1_agent_" + str(
                         i)] = self.attack_actions_team_1[i]
-                    info["win_move_actions_team_1_agent_" + str(
+                    info["loss_move_actions_team_1_agent_" + str(
                         i)] = self.move_actions_team_1[i]
-                    info["win_stop_actions_team_1_agent_" + str(
+                    info["loss_stop_actions_team_1_agent_" + str(
                         i)] = self.stop_actions_team_1[i]
 
         elif self._episode_steps >= self.episode_limit:
@@ -441,11 +441,11 @@ class StarCraft2EnvMulti(StarCraft2Env):
                     i)] = pos_team_1[i][1]
                 info["draw_distance_traveled_team_1_agent_" + str(
                     i)] = self.distance_traveled_team_1[i]
-                info["win_attack_actions_team_1_agent_" + str(
+                info["draw_attack_actions_team_1_agent_" + str(
                     i)] = self.attack_actions_team_1[i]
-                info["win_move_actions_team_1_agent_" + str(
+                info["draw_move_actions_team_1_agent_" + str(
                     i)] = self.move_actions_team_1[i]
-                info["win_stop_actions_team_1_agent_" + str(
+                info["draw_stop_actions_team_1_agent_" + str(
                     i)] = self.stop_actions_team_1[i]
             for i in range(self.n_enemies):
                 unit = self.get_unit_by_id(self.n_agents + i)
@@ -457,11 +457,11 @@ class StarCraft2EnvMulti(StarCraft2Env):
                     i)] = pos_team_2[i][1]
                 info["draw_distance_traveled_team_2_agent_" + str(
                     i)] = self.distance_traveled_team_2[i]
-                info["win_attack_actions_team_2_agent_" + str(
+                info["draw_attack_actions_team_2_agent_" + str(
                     i)] = self.attack_actions_team_2[i]
-                info["win_move_actions_team_2_agent_" + str(
+                info["draw_move_actions_team_2_agent_" + str(
                     i)] = self.move_actions_team_2[i]
-                info["win_stop_actions_team_2_agent_" + str(
+                info["draw_stop_actions_team_2_agent_" + str(
                     i)] = self.stop_actions_team_2[i]
 
         if self.debug:
