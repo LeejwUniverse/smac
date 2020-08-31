@@ -96,6 +96,7 @@ class StarCraft2Env(MultiAgentEnv):
         window_size_y=1200,
         heuristic_ai=False,
         debug=False,
+        log_more_stats=False
     ):
         """
         Create a StarCraftC2Env environment.
@@ -245,6 +246,7 @@ class StarCraft2Env(MultiAgentEnv):
         self.window_size = (window_size_x, window_size_y)
         self.replay_dir = replay_dir
         self.replay_prefix = replay_prefix
+        self.log_more_stats = log_more_stats
 
         # Actions
         self.n_actions_no_attack = 6
