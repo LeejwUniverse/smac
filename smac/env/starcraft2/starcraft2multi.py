@@ -595,28 +595,32 @@ class StarCraft2EnvMulti(StarCraft2Env):
                             i)] = self.move_actions_team_1[i]
                         info["win_stop_actions_team_1_agent_" + str(
                             i)] = self.stop_actions_team_1[i]
-                        info[
-                            "win_once_in_shoot_range_opponent_team_1_agent_" + str(
-                                i)] = self.once_in_shoot_range_opponent_team_1[
-                            i]
-                        info[
-                            "win_once_in_sight_range_opponent_team_1_agent_" + str(
-                                i)] = self.once_in_sight_range_opponent_team_1[
-                            i]
-                        info["win_move_in_sight_range_team1_agent_" + str(i)] = \
-                        self.move_in_sight_range_team1[i]
-                        info[
-                            "win_move_toward_in_sight_range_team1_agent_" + str(
-                                i)] = self.move_toward_in_sight_range_team1[i]
-                        info["win_move_away_in_sight_range_team1_agent_" + str(
-                            i)] = self.move_away_in_sight_range_team1[i]
-                        info["win_move_in_shoot_range_team1_agent_" + str(i)] = \
-                        self.move_in_shoot_range_team1[i]
-                        info[
-                            "win_move_toward_in_shoot_range_team1_agent_" + str(
-                                i)] = self.move_toward_in_shoot_range_team1[i]
-                        info["win_move_away_in_shoot_range_team1_agent_" + str(
-                            i)] = self.move_away_in_shoot_range_team1[i]
+
+                        info["win_once_in_shoot_range_opponent_1_team_1_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_1[i][0]
+                        info["win_once_in_shoot_range_opponent_2_team_1_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_1[i][1]
+                        info["win_once_in_shoot_range_opponent_3_team_1_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_1[i][2]
+                        info["win_once_in_sight_range_opponent_1_team_1_agent_" + str(i)] = self.once_in_sight_range_opponent_team_1[i][0]
+                        info["win_once_in_sight_range_opponent_2_team_1_agent_" + str(i)] = self.once_in_sight_range_opponent_team_1[i][1]
+                        info["win_once_in_sight_range_opponent_3_team_1_agent_" + str(i)] = self.once_in_sight_range_opponent_team_1[i][2]
+                        info["win_move_in_sight_range_1_team1_agent_" + str(i)] = self.move_in_sight_range_team1[i][0]
+                        info["win_move_in_sight_range_2_team1_agent_" + str(i)] = self.move_in_sight_range_team1[i][1]
+                        info["win_move_in_sight_range_3_team1_agent_" + str(i)] = self.move_in_sight_range_team1[i][2]
+                        info["win_move_toward_in_sight_range_1_team1_agent_" + str(i)] = self.move_toward_in_sight_range_team1[i][0]
+                        info["win_move_toward_in_sight_range_2_team1_agent_" + str(i)] = self.move_toward_in_sight_range_team1[i][1]
+                        info["win_move_toward_in_sight_range_3_team1_agent_" + str(i)] = self.move_toward_in_sight_range_team1[i][2]
+                        info["win_move_away_in_sight_range_1_team1_agent_" + str(i)] = self.move_away_in_sight_range_team1[i][0]
+                        info["win_move_away_in_sight_range_2_team1_agent_" + str(i)] = self.move_away_in_sight_range_team1[i][1]
+                        info["win_move_away_in_sight_range_3_team1_agent_" + str(i)] = self.move_away_in_sight_range_team1[i][2]
+                        info["win_move_in_shoot_range_1_team1_agent_" + str(i)] = self.move_in_shoot_range_team1[i][0]
+                        info["win_move_in_shoot_range_2_team1_agent_" + str(i)] = self.move_in_shoot_range_team1[i][1]
+                        info["win_move_in_shoot_range_3_team1_agent_" + str(i)] = self.move_in_shoot_range_team1[i][2]
+                        info["win_move_toward_in_shoot_range_1_team1_agent_" + str(i)] = self.move_toward_in_shoot_range_team1[i][0]
+                        info["win_move_toward_in_shoot_range_2_team1_agent_" + str(i)] = self.move_toward_in_shoot_range_team1[i][1]
+                        info["win_move_toward_in_shoot_range_3_team1_agent_" + str(i)] = self.move_toward_in_shoot_range_team1[i][2]
+                        info["win_move_away_in_shoot_range_1_team1_agent_" + str(i)] = self.move_away_in_shoot_range_team1[i][0]
+                        info["win_move_away_in_shoot_range_2_team1_agent_" + str(i)] = self.move_away_in_shoot_range_team1[i][1]
+                        info["win_move_away_in_shoot_range_3_team1_agent_" + str(i)] = self.move_away_in_shoot_range_team1[i][2]
+
 
                     for i in range(self.n_enemies):
                         info["loss_position_x_team_2_agent_" + str(
@@ -639,12 +643,31 @@ class StarCraft2EnvMulti(StarCraft2Env):
                             "loss_once_in_sight_range_opponent_team_2_agent_" + str(
                                 i)] = self.once_in_sight_range_opponent_team_2[
                             i]
-                        info["loss_move_in_sight_range_team2_agent_" + str(i)] = self.move_in_sight_range_team2[i]
-                        info["loss_move_toward_in_sight_range_team2_agent_" + str(i)] = self.move_toward_in_sight_range_team2[i]
-                        info["loss_move_away_in_sight_range_team2_agent_" + str(i)] = self.move_away_in_sight_range_team2[i]
-                        info["loss_move_in_shoot_range_team2_agent_" + str(i)] = self.move_in_shoot_range_team2[i]
-                        info["loss_move_toward_in_shoot_range_team2_agent_" + str(i)] = self.move_toward_in_shoot_range_team2[i]
-                        info["loss_move_away_in_shoot_range_team2_agent_" + str(i)] = self.move_away_in_shoot_range_team2[i]
+                        info["loss_once_in_shoot_range_opponent_1_team_2_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_2[i][0]
+                        info["loss_once_in_shoot_range_opponent_2_team_2_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_2[i][1]
+                        info["loss_once_in_shoot_range_opponent_3_team_2_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_2[i][2]
+                        info["loss_once_in_sight_range_opponent_1_team_2_agent_" + str(i)] = self.once_in_sight_range_opponent_team_2[i][0]
+                        info["loss_once_in_sight_range_opponent_2_team_2_agent_" + str(i)] = self.once_in_sight_range_opponent_team_2[i][1]
+                        info["loss_once_in_sight_range_opponent_3_team_2_agent_" + str(i)] = self.once_in_sight_range_opponent_team_2[i][2]
+                        info["loss_move_in_sight_range_1_team2_agent_" + str(i)] = self.move_in_sight_range_team2[i][0]
+                        info["loss_move_in_sight_range_2_team2_agent_" + str(i)] = self.move_in_sight_range_team2[i][1]
+                        info["loss_move_in_sight_range_3_team2_agent_" + str(i)] = self.move_in_sight_range_team2[i][2]
+                        info["loss_move_toward_in_sight_range_1_team2_agent_" + str(i)] = self.move_toward_in_sight_range_team2[i][0]
+                        info["loss_move_toward_in_sight_range_2_team2_agent_" + str(i)] = self.move_toward_in_sight_range_team2[i][1]
+                        info["loss_move_toward_in_sight_range_3_team2_agent_" + str(i)] = self.move_toward_in_sight_range_team2[i][2]
+                        info["loss_move_away_in_sight_range_1_team2_agent_" + str(i)] = self.move_away_in_sight_range_team2[i][0]
+                        info["loss_move_away_in_sight_range_2_team2_agent_" + str(i)] = self.move_away_in_sight_range_team2[i][1]
+                        info["loss_move_away_in_sight_range_3_team2_agent_" + str(i)] = self.move_away_in_sight_range_team2[i][2]
+                        info["loss_move_in_shoot_range_1_team2_agent_" + str(i)] = self.move_in_shoot_range_team2[i][0]
+                        info["loss_move_in_shoot_range_2_team2_agent_" + str(i)] = self.move_in_shoot_range_team2[i][1]
+                        info["loss_move_in_shoot_range_3_team2_agent_" + str(i)] = self.move_in_shoot_range_team2[i][2]
+                        info["loss_move_toward_in_shoot_range_1_team2_agent_" + str(i)] = self.move_toward_in_shoot_range_team2[i][0]
+                        info["loss_move_toward_in_shoot_range_2_team2_agent_" + str(i)] = self.move_toward_in_shoot_range_team2[i][1]
+                        info["loss_move_toward_in_shoot_range_3_team2_agent_" + str(i)] = self.move_toward_in_shoot_range_team2[i][2]
+                        info["loss_move_away_in_shoot_range_1_team2_agent_" + str(i)] = self.move_away_in_shoot_range_team2[i][0]
+                        info["loss_move_away_in_shoot_range_2_team2_agent_" + str(i)] = self.move_away_in_shoot_range_team2[i][1]
+                        info["loss_move_away_in_shoot_range_3_team2_agent_" + str(i)] = self.move_away_in_shoot_range_team2[i][2]
+
 
 
 
@@ -684,12 +707,31 @@ class StarCraft2EnvMulti(StarCraft2Env):
                             "win_once_in_sight_range_opponent_team_2_agent_" + str(
                                 i)] = self.once_in_sight_range_opponent_team_2[
                             i]
-                        info["win_move_in_sight_range_team2_agent_" + str(i)] = self.move_in_sight_range_team2[i]
-                        info["win_move_toward_in_sight_range_team2_agent_" + str(i)] = self.move_toward_in_sight_range_team2[i]
-                        info["win_move_away_in_sight_range_team2_agent_" + str(i)] = self.move_away_in_sight_range_team2[i]
-                        info["win_move_in_shoot_range_team2_agent_" + str(i)] = self.move_in_shoot_range_team2[i]
-                        info["win_move_toward_in_shoot_range_team2_agent_" + str(i)] = self.move_toward_in_shoot_range_team2[i]
-                        info["win_move_away_in_shoot_range_team2_agent_" + str(i)] = self.move_away_in_shoot_range_team2[i]
+                        info["win_once_in_shoot_range_opponent_1_team_2_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_2[i][0]
+                        info["win_once_in_shoot_range_opponent_2_team_2_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_2[i][1]
+                        info["win_once_in_shoot_range_opponent_3_team_2_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_2[i][2]
+                        info["win_once_in_sight_range_opponent_1_team_2_agent_" + str(i)] = self.once_in_sight_range_opponent_team_2[i][0]
+                        info["win_once_in_sight_range_opponent_2_team_2_agent_" + str(i)] = self.once_in_sight_range_opponent_team_2[i][1]
+                        info["win_once_in_sight_range_opponent_3_team_2_agent_" + str(i)] = self.once_in_sight_range_opponent_team_2[i][2]
+                        info["win_move_in_sight_range_1_team2_agent_" + str(i)] = self.move_in_sight_range_team2[i][0]
+                        info["win_move_in_sight_range_2_team2_agent_" + str(i)] = self.move_in_sight_range_team2[i][1]
+                        info["win_move_in_sight_range_3_team2_agent_" + str(i)] = self.move_in_sight_range_team2[i][2]
+                        info["win_move_toward_in_sight_range_1_team2_agent_" + str(i)] = self.move_toward_in_sight_range_team2[i][0]
+                        info["win_move_toward_in_sight_range_2_team2_agent_" + str(i)] = self.move_toward_in_sight_range_team2[i][1]
+                        info["win_move_toward_in_sight_range_3_team2_agent_" + str(i)] = self.move_toward_in_sight_range_team2[i][2]
+                        info["win_move_away_in_sight_range_1_team2_agent_" + str(i)] = self.move_away_in_sight_range_team2[i][0]
+                        info["win_move_away_in_sight_range_2_team2_agent_" + str(i)] = self.move_away_in_sight_range_team2[i][1]
+                        info["win_move_away_in_sight_range_3_team2_agent_" + str(i)] = self.move_away_in_sight_range_team2[i][2]
+                        info["win_move_in_shoot_range_1_team2_agent_" + str(i)] = self.move_in_shoot_range_team2[i][0]
+                        info["win_move_in_shoot_range_2_team2_agent_" + str(i)] = self.move_in_shoot_range_team2[i][1]
+                        info["win_move_in_shoot_range_3_team2_agent_" + str(i)] = self.move_in_shoot_range_team2[i][2]
+                        info["win_move_toward_in_shoot_range_1_team2_agent_" + str(i)] = self.move_toward_in_shoot_range_team2[i][0]
+                        info["win_move_toward_in_shoot_range_2_team2_agent_" + str(i)] = self.move_toward_in_shoot_range_team2[i][1]
+                        info["win_move_toward_in_shoot_range_3_team2_agent_" + str(i)] = self.move_toward_in_shoot_range_team2[i][2]
+                        info["win_move_away_in_shoot_range_1_team2_agent_" + str(i)] = self.move_away_in_shoot_range_team2[i][0]
+                        info["win_move_away_in_shoot_range_2_team2_agent_" + str(i)] = self.move_away_in_shoot_range_team2[i][1]
+                        info["win_move_away_in_shoot_range_3_team2_agent_" + str(i)] = self.move_away_in_shoot_range_team2[i][2]
+
 
 
                     for i in range(self.n_agents):
@@ -705,35 +747,30 @@ class StarCraft2EnvMulti(StarCraft2Env):
                             i)] = self.move_actions_team_1[i]
                         info["loss_stop_actions_team_1_agent_" + str(
                             i)] = self.stop_actions_team_1[i]
-                        info[
-                            "loss_once_in_shoot_range_opponent_team_1_agent_" + str(
-                                i)] = self.once_in_shoot_range_opponent_team_1[
-                            i]
-                        info[
-                            "loss_once_in_sight_range_opponent_team_1_agent_" + str(
-                                i)] = self.once_in_sight_range_opponent_team_1[
-                            i]
-                        info[
-                            "loss_move_in_sight_range_team1_agent_" + str(i)] = \
-                        self.move_in_sight_range_team1[i]
-                        info[
-                            "loss_move_toward_in_sight_range_team1_agent_" + str(
-                                i)] = self.move_toward_in_sight_range_team1[i]
-                        info[
-                            "loss_move_away_in_sight_range_team1_agent_" + str(
-                                i)] = self.move_away_in_sight_range_team1[i]
-                        info[
-                            "loss_move_in_shoot_range_team1_agent_" + str(i)] = \
-                        self.move_in_shoot_range_team1[i]
-                        info[
-                            "loss_move_toward_in_shoot_range_team1_agent_" + str(
-                                i)] = self.move_toward_in_shoot_range_team1[i]
-                        info[
-                            "loss_move_away_in_shoot_range_team1_agent_" + str(
-                                i)] = self.move_away_in_shoot_range_team1[i]
-
-
-
+                        info["loss_once_in_shoot_range_opponent_1_team_1_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_1[i][0]
+                        info["loss_once_in_shoot_range_opponent_2_team_1_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_1[i][1]
+                        info["loss_once_in_shoot_range_opponent_3_team_1_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_1[i][2]
+                        info["loss_once_in_sight_range_opponent_1_team_1_agent_" + str(i)] = self.once_in_sight_range_opponent_team_1[i][0]
+                        info["loss_once_in_sight_range_opponent_2_team_1_agent_" + str(i)] = self.once_in_sight_range_opponent_team_1[i][1]
+                        info["loss_once_in_sight_range_opponent_3_team_1_agent_" + str(i)] = self.once_in_sight_range_opponent_team_1[i][2]
+                        info["loss_move_in_sight_range_1_team1_agent_" + str(i)] = self.move_in_sight_range_team1[i][0]
+                        info["loss_move_in_sight_range_2_team1_agent_" + str(i)] = self.move_in_sight_range_team1[i][1]
+                        info["loss_move_in_sight_range_3_team1_agent_" + str(i)] = self.move_in_sight_range_team1[i][2]
+                        info["loss_move_toward_in_sight_range_1_team1_agent_" + str(i)] = self.move_toward_in_sight_range_team1[i][0]
+                        info["loss_move_toward_in_sight_range_2_team1_agent_" + str(i)] = self.move_toward_in_sight_range_team1[i][1]
+                        info["loss_move_toward_in_sight_range_3_team1_agent_" + str(i)] = self.move_toward_in_sight_range_team1[i][2]
+                        info["loss_move_away_in_sight_range_1_team1_agent_" + str(i)] = self.move_away_in_sight_range_team1[i][0]
+                        info["loss_move_away_in_sight_range_2_team1_agent_" + str(i)] = self.move_away_in_sight_range_team1[i][1]
+                        info["loss_move_away_in_sight_range_3_team1_agent_" + str(i)] = self.move_away_in_sight_range_team1[i][2]
+                        info["loss_move_in_shoot_range_1_team1_agent_" + str(i)] = self.move_in_shoot_range_team1[i][0]
+                        info["loss_move_in_shoot_range_2_team1_agent_" + str(i)] = self.move_in_shoot_range_team1[i][1]
+                        info["loss_move_in_shoot_range_3_team1_agent_" + str(i)] = self.move_in_shoot_range_team1[i][2]
+                        info["loss_move_toward_in_shoot_range_1_team1_agent_" + str(i)] = self.move_toward_in_shoot_range_team1[i][0]
+                        info["loss_move_toward_in_shoot_range_2_team1_agent_" + str(i)] = self.move_toward_in_shoot_range_team1[i][1]
+                        info["loss_move_toward_in_shoot_range_3_team1_agent_" + str(i)] = self.move_toward_in_shoot_range_team1[i][2]
+                        info["loss_move_away_in_shoot_range_1_team1_agent_" + str(i)] = self.move_away_in_shoot_range_team1[i][0]
+                        info["loss_move_away_in_shoot_range_2_team1_agent_" + str(i)] = self.move_away_in_shoot_range_team1[i][1]
+                        info["loss_move_away_in_shoot_range_3_team1_agent_" + str(i)] = self.move_away_in_shoot_range_team1[i][2]
 
         elif self._episode_steps >= self.episode_limit:
             # Episode limit reached
@@ -777,24 +814,31 @@ class StarCraft2EnvMulti(StarCraft2Env):
                         i)] = self.move_actions_team_1[i]
                     info["draw_stop_actions_team_1_agent_" + str(
                         i)] = self.stop_actions_team_1[i]
-                    info[
-                        "draw_once_in_shoot_range_opponent_team_1_agent_" + str(
-                            i)] = self.once_in_shoot_range_opponent_team_1[i]
-                    info[
-                        "draw_once_in_sight_range_opponent_team_1_agent_" + str(
-                            i)] = self.once_in_sight_range_opponent_team_1[i]
-                    info["draw_move_in_sight_range_team1_agent_" + str(i)] = \
-                    self.move_in_sight_range_team1[i]
-                    info["draw_move_toward_in_sight_range_team1_agent_" + str(
-                        i)] = self.move_toward_in_sight_range_team1[i]
-                    info["draw_move_away_in_sight_range_team1_agent_" + str(
-                        i)] = self.move_away_in_sight_range_team1[i]
-                    info["draw_move_in_shoot_range_team1_agent_" + str(i)] = \
-                    self.move_in_shoot_range_team1[i]
-                    info["draw_move_toward_in_shoot_range_team1_agent_" + str(
-                        i)] = self.move_toward_in_shoot_range_team1[i]
-                    info["draw_move_away_in_shoot_range_team1_agent_" + str(
-                        i)] = self.move_away_in_shoot_range_team1[i]
+                    info["draw_once_in_shoot_range_opponent_1_team_1_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_1[i][0]
+                    info["draw_once_in_shoot_range_opponent_2_team_1_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_1[i][1]
+                    info["draw_once_in_shoot_range_opponent_3_team_1_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_1[i][2]
+                    info["draw_once_in_sight_range_opponent_1_team_1_agent_" + str(i)] = self.once_in_sight_range_opponent_team_1[i][0]
+                    info["draw_once_in_sight_range_opponent_2_team_1_agent_" + str(i)] = self.once_in_sight_range_opponent_team_1[i][1]
+                    info["draw_once_in_sight_range_opponent_3_team_1_agent_" + str(i)] = self.once_in_sight_range_opponent_team_1[i][2]
+                    info["draw_move_in_sight_range_1_team1_agent_" + str(i)] = self.move_in_sight_range_team1[i][0]
+                    info["draw_move_in_sight_range_2_team1_agent_" + str(i)] = self.move_in_sight_range_team1[i][1]
+                    info["draw_move_in_sight_range_3_team1_agent_" + str(i)] = self.move_in_sight_range_team1[i][2]
+                    info["draw_move_toward_in_sight_range_1_team1_agent_" + str(i)] = self.move_toward_in_sight_range_team1[i][0]
+                    info["draw_move_toward_in_sight_range_2_team1_agent_" + str(i)] = self.move_toward_in_sight_range_team1[i][1]
+                    info["draw_move_toward_in_sight_range_3_team1_agent_" + str(i)] = self.move_toward_in_sight_range_team1[i][2]
+                    info["draw_move_away_in_sight_range_1_team1_agent_" + str(i)] = self.move_away_in_sight_range_team1[i][0]
+                    info["draw_move_away_in_sight_range_2_team1_agent_" + str(i)] = self.move_away_in_sight_range_team1[i][1]
+                    info["draw_move_away_in_sight_range_3_team1_agent_" + str(i)] = self.move_away_in_sight_range_team1[i][2]
+                    info["draw_move_in_shoot_range_1_team1_agent_" + str(i)] = self.move_in_shoot_range_team1[i][0]
+                    info["draw_move_in_shoot_range_2_team1_agent_" + str(i)] = self.move_in_shoot_range_team1[i][1]
+                    info["draw_move_in_shoot_range_3_team1_agent_" + str(i)] = self.move_in_shoot_range_team1[i][2]
+                    info["draw_move_toward_in_shoot_range_1_team1_agent_" + str(i)] = self.move_toward_in_shoot_range_team1[i][0]
+                    info["draw_move_toward_in_shoot_range_2_team1_agent_" + str(i)] = self.move_toward_in_shoot_range_team1[i][1]
+                    info["draw_move_toward_in_shoot_range_3_team1_agent_" + str(i)] = self.move_toward_in_shoot_range_team1[i][2]
+                    info["draw_move_away_in_shoot_range_1_team1_agent_" + str(i)] = self.move_away_in_shoot_range_team1[i][0]
+                    info["draw_move_away_in_shoot_range_2_team1_agent_" + str(i)] = self.move_away_in_shoot_range_team1[i][1]
+                    info["draw_move_away_in_shoot_range_3_team1_agent_" + str(i)] = self.move_away_in_shoot_range_team1[i][2]
+
 
                 for i in range(self.n_enemies):
                     unit = self.get_unit_by_id(self.n_agents + i)
@@ -812,24 +856,30 @@ class StarCraft2EnvMulti(StarCraft2Env):
                         i)] = self.move_actions_team_2[i]
                     info["draw_stop_actions_team_2_agent_" + str(
                         i)] = self.stop_actions_team_2[i]
-                    info[
-                        "draw_once_in_shoot_range_opponent_team_2_agent_" + str(
-                            i)] = self.once_in_shoot_range_opponent_team_2[i]
-                    info[
-                        "draw_once_in_sight_range_opponent_team_2_agent_" + str(
-                            i)] = self.once_in_sight_range_opponent_team_2[i]
-                    info["draw_move_in_sight_range_team2_agent_" + str(i)] = \
-                    self.move_in_sight_range_team2[i]
-                    info["draw_move_toward_in_sight_range_team2_agent_" + str(
-                        i)] = self.move_toward_in_sight_range_team2[i]
-                    info["draw_move_away_in_sight_range_team2_agent_" + str(
-                        i)] = self.move_away_in_sight_range_team2[i]
-                    info["draw_move_in_shoot_range_team2_agent_" + str(i)] = \
-                    self.move_in_shoot_range_team2[i]
-                    info["draw_move_toward_in_shoot_range_team2_agent_" + str(
-                        i)] = self.move_toward_in_shoot_range_team2[i]
-                    info["draw_move_away_in_shoot_range_team2_agent_" + str(
-                        i)] = self.move_away_in_shoot_range_team2[i]
+                    info["draw_once_in_shoot_range_opponent_1_team_2_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_2[i][0]
+                    info["draw_once_in_shoot_range_opponent_2_team_2_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_2[i][1]
+                    info["draw_once_in_shoot_range_opponent_3_team_2_agent_" + str(i)] = self.once_in_shoot_range_opponent_team_2[i][2]
+                    info["draw_once_in_sight_range_opponent_1_team_2_agent_" + str(i)] = self.once_in_sight_range_opponent_team_2[i][0]
+                    info["draw_once_in_sight_range_opponent_2_team_2_agent_" + str(i)] = self.once_in_sight_range_opponent_team_2[i][1]
+                    info["draw_once_in_sight_range_opponent_3_team_2_agent_" + str(i)] = self.once_in_sight_range_opponent_team_2[i][2]
+                    info["draw_move_in_sight_range_1_team2_agent_" + str(i)] = self.move_in_sight_range_team2[i][0]
+                    info["draw_move_in_sight_range_2_team2_agent_" + str(i)] = self.move_in_sight_range_team2[i][1]
+                    info["draw_move_in_sight_range_3_team2_agent_" + str(i)] = self.move_in_sight_range_team2[i][2]
+                    info["draw_move_toward_in_sight_range_1_team2_agent_" + str(i)] = self.move_toward_in_sight_range_team2[i][0]
+                    info["draw_move_toward_in_sight_range_2_team2_agent_" + str(i)] = self.move_toward_in_sight_range_team2[i][1]
+                    info["draw_move_toward_in_sight_range_3_team2_agent_" + str(i)] = self.move_toward_in_sight_range_team2[i][2]
+                    info["draw_move_away_in_sight_range_1_team2_agent_" + str(i)] = self.move_away_in_sight_range_team2[i][0]
+                    info["draw_move_away_in_sight_range_2_team2_agent_" + str(i)] = self.move_away_in_sight_range_team2[i][1]
+                    info["draw_move_away_in_sight_range_3_team2_agent_" + str(i)] = self.move_away_in_sight_range_team2[i][2]
+                    info["draw_move_in_shoot_range_1_team2_agent_" + str(i)] = self.move_in_shoot_range_team2[i][0]
+                    info["draw_move_in_shoot_range_2_team2_agent_" + str(i)] = self.move_in_shoot_range_team2[i][1]
+                    info["draw_move_in_shoot_range_3_team2_agent_" + str(i)] = self.move_in_shoot_range_team2[i][2]
+                    info["draw_move_toward_in_shoot_range_1_team2_agent_" + str(i)] = self.move_toward_in_shoot_range_team2[i][0]
+                    info["draw_move_toward_in_shoot_range_2_team2_agent_" + str(i)] = self.move_toward_in_shoot_range_team2[i][1]
+                    info["draw_move_toward_in_shoot_range_3_team2_agent_" + str(i)] = self.move_toward_in_shoot_range_team2[i][2]
+                    info["draw_move_away_in_shoot_range_1_team2_agent_" + str(i)] = self.move_away_in_shoot_range_team2[i][0]
+                    info["draw_move_away_in_shoot_range_2_team2_agent_" + str(i)] = self.move_away_in_shoot_range_team2[i][1]
+                    info["draw_move_away_in_shoot_range_3_team2_agent_" + str(i)] = self.move_away_in_shoot_range_team2[i][2]
 
         if self.debug:
             logging.debug("Reward = {}".format(reward).center(60, '-'))
