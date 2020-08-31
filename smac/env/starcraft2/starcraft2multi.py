@@ -148,21 +148,68 @@ class StarCraft2EnvMulti(StarCraft2Env):
             logging.debug("Started Episode {}"
                           .format(self._episode_count).center(60, "*"))
 
-        # variable storage
-        self.distance_traveled_team_1 = [0 for _ in range(self.n_agents)]
-        self.distance_traveled_team_2 = [0 for _ in range(self.n_enemies)]
-        self.previous_team_1_pos = [(al_unit.pos.x, al_unit.pos.y) for
-                                    idx, al_unit
-                                    in self.agents.items()]
-        self.previous_team_2_pos = [(en_unit.pos.x, en_unit.pos.y) for
-                                    idx, en_unit
-                                    in self.enemies.items()]
-        self.attack_actions_team_1 = [0 for _ in range(self.n_agents)]
-        self.attack_actions_team_2 = [0 for _ in range(self.n_enemies)]
-        self.move_actions_team_1 = [0 for _ in range(self.n_agents)]
-        self.move_actions_team_2 = [0 for _ in range(self.n_enemies)]
-        self.stop_actions_team_1 = [0 for _ in range(self.n_agents)]
-        self.stop_actions_team_2 = [0 for _ in range(self.n_enemies)]
+        if self.log_more_stats:
+            self.distance_traveled_team_1 = [0 for _ in range(self.n_agents)]
+            self.distance_traveled_team_2 = [0 for _ in range(self.n_enemies)]
+            self.previous_team_1_pos = [[al_unit.pos.x, al_unit.pos.y] for
+                                        idx, al_unit
+                                        in self.agents.items()]
+            self.previous_team_2_pos = [[en_unit.pos.x, en_unit.pos.y] for
+                                        idx, en_unit
+                                        in self.enemies.items()]
+            self.attack_actions_team_1 = [0 for _ in range(self.n_agents)]
+            self.attack_actions_team_2 = [0 for _ in range(self.n_enemies)]
+            self.move_actions_team_1 = [0 for _ in range(self.n_agents)]
+            self.move_actions_team_2 = [0 for _ in range(self.n_enemies)]
+
+            self.stop_actions_team_1 = [0 for _ in range(self.n_agents)]
+            self.stop_actions_team_2 = [0 for _ in range(self.n_enemies)]
+
+            self.once_in_shoot_range_opponent_team_1 = [
+                [False for _ in range(self.n_enemies)]
+                for _ in range(self.n_agents)]
+            self.once_in_shoot_range_opponent_team_2 = [
+                [False for _ in range(self.n_agents)]
+                for _ in range(self.n_enemies)]
+            self.once_in_sight_range_opponent_team_1 = [
+                [False for _ in range(self.n_enemies)]
+                for _ in range(self.n_agents)]
+            self.once_in_sight_range_opponent_team_2 = [
+                [False for _ in range(self.n_agents)]
+                for _ in range(self.n_enemies)]
+
+            self.move_in_sight_range_team1 = [0 for _ in
+                                              range(self.n_agents)]
+            self.move_toward_in_sight_range_team1 = [
+                [0 for _ in range(self.n_enemies)] for _ in
+                range(self.n_agents)]
+            self.move_away_in_sight_range_team1 = [
+                [0 for _ in range(self.n_enemies)] for _ in
+                range(self.n_agents)]
+
+            self.move_in_shoot_range_team1 = [0 for _ in range(self.n_agents)]
+            self.move_toward_in_shoot_range_team1 = [
+                [0 for _ in range(self.n_enemies)] for _ in
+                range(self.n_agents)]
+            self.move_away_in_shoot_range_team1 = [
+                [0 for _ in range(self.n_enemies)] for _ in
+                range(self.n_agents)]
+
+            self.move_in_sight_range_team2 = [0 for _ in range(self.n_enemies)]
+            self.move_toward_in_sight_range_team2 = [
+                [0 for _ in range(self.n_agents)] for _ in
+                range(self.n_enemies)]
+            self.move_away_in_sight_range_team2 = [
+                [0 for _ in range(self.n_agents)] for _ in
+                range(self.n_enemies)]
+            self.move_in_shoot_range_team2 = [0 for _ in range(self.n_enemies)]
+            self.move_toward_in_shoot_range_team2 = [
+                [0 for _ in range(self.n_agents)] for _ in
+                range(self.n_enemies)]
+            self.move_away_in_shoot_range_team2 = [
+                [0 for _ in range(self.n_agents)] for _ in
+                range(self.n_enemies)]
+
         return self.get_obs(), self.get_state()
 
     def _restart(self):
@@ -188,7 +235,6 @@ class StarCraft2EnvMulti(StarCraft2Env):
         except:
             self.full_restart()
 
-
     def setup_heuristic(self, team_1: bool, team_2: bool):
         self.team_1_heuristic = team_1
         self.team_2_heuristic = team_2
@@ -205,21 +251,241 @@ class StarCraft2EnvMulti(StarCraft2Env):
                 actions[self.n_agents + i] = self.get_heuristic_action(
                     self.n_agents + i)
 
-        # count type of actions
-        for i in range(self.n_agents):
-            if actions[i] > 5:
-                self.attack_actions_team_1[i] += 1
-            elif actions[i] > 1:
-                self.move_actions_team_1[i] += 1
-            elif actions[i] == 1:
-                self.stop_actions_team_1[i] += 1
-        for i in range(self.n_enemies):
-            if actions[self.n_agents + i] > 5:
-                self.attack_actions_team_2[i] += 1
-            elif actions[self.n_agents + i] > 1:
-                self.move_actions_team_2[i] += 1
-            elif actions[self.n_agents + i] == 1:
-                self.stop_actions_team_2[i] += 1
+        if self.log_more_stats:
+            # count type of actions
+            for i in range(self.n_agents):
+                if actions[i] > 5:
+                    self.attack_actions_team_1[i] += 1
+                elif actions[i] > 1:
+                    self.move_actions_team_1[i] += 1
+                elif actions[i] == 1:
+                    self.stop_actions_team_1[i] += 1
+            for i in range(self.n_enemies):
+                if actions[self.n_agents + i] > 5:
+                    self.attack_actions_team_2[i] += 1
+                elif actions[self.n_agents + i] > 1:
+                    self.move_actions_team_2[i] += 1
+                elif actions[self.n_agents + i] == 1:
+                    self.stop_actions_team_2[i] += 1
+            new_pos_team_1 = []
+            new_pos_team_2 = []
+
+            for i in range(self.n_agents):
+                unit = self.get_unit_by_id(i)
+                new_pos_team_1.append((unit.pos.x, unit.pos.y))
+            for i in range(self.n_enemies):
+                unit = self.get_unit_by_id(self.n_agents + i)
+                new_pos_team_2.append((unit.pos.x, unit.pos.y))
+
+            for i in range(self.n_agents):
+                shoot_range = self.unit_shoot_range(i)
+                sight_range = self.unit_sight_range(i)
+                move_in_shoot_not_counted = True
+                move_in_sight_not_counted = True
+                for t_id, t_unit in self.enemies.items():
+                    if t_unit.health > 0:
+                        dist = self.distance(
+                            new_pos_team_1[i][0], new_pos_team_1[i][1],
+                            t_unit.pos.x, t_unit.pos.y
+                        )
+                        if dist <= shoot_range:
+                            self.once_in_shoot_range_opponent_team_1[i][
+                                t_id] = True
+                            if 1 < actions[i] < 6:
+                                if move_in_shoot_not_counted:
+                                    self.move_in_shoot_range_team1[i] += 1
+                                    move_in_shoot_not_counted = False
+                                x_diff = new_pos_team_1[i][0] - t_unit.pos.x
+                                y_diff = new_pos_team_1[i][1] - t_unit.pos.y
+                                if actions[i] == 2:
+                                    # north
+                                    if y_diff < 0:
+                                        self.move_toward_in_shoot_range_team1[
+                                            i][t_id] += 1
+                                    else:
+                                        self.move_away_in_shoot_range_team1[i][
+                                            t_id] += 1
+                                if actions[i] == 3:
+                                    # south
+                                    if y_diff > 0:
+                                        self.move_toward_in_shoot_range_team1[
+                                            i][t_id] += 1
+                                    else:
+                                        self.move_away_in_shoot_range_team1[i][
+                                            t_id] += 1
+                                if actions[i] == 4:
+                                    # east
+                                    if x_diff < 0:
+
+                                        self.move_toward_in_shoot_range_team1[
+                                            i][t_id] += 1
+                                    else:
+                                        self.move_away_in_shoot_range_team1[i][
+                                            t_id] += 1
+                                if actions[i] == 5:
+                                    # west
+                                    if x_diff > 0:
+                                        self.move_toward_in_shoot_range_team1[
+                                            i][t_id] += 1
+                                    else:
+                                        self.move_away_in_shoot_range_team1[i][
+                                            t_id] += 1
+
+                        elif dist <= sight_range:
+                            self.once_in_sight_range_opponent_team_1[i][
+                                t_id] = True
+                            if 1 < actions[i] < 6:
+                                if move_in_sight_not_counted:
+                                    self.move_in_sight_range_team1[i] += 1
+                                    move_in_sight_not_counted = False
+                                x_diff = new_pos_team_1[i][0] - t_unit.pos.x
+                                y_diff = new_pos_team_1[i][1] - t_unit.pos.y
+                                if actions[i] == 2:
+                                    # north
+                                    if y_diff < 0:
+                                        self.move_toward_in_sight_range_team1[
+                                            i][t_id] += 1
+                                    else:
+                                        self.move_away_in_sight_range_team1[i][
+                                            t_id] += 1
+                                if actions[i] == 3:
+                                    # south
+                                    if y_diff > 0:
+                                        self.move_toward_in_sight_range_team1[
+                                            i][t_id] += 1
+                                    else:
+                                        self.move_away_in_sight_range_team1[i][
+                                            t_id] += 1
+                                if actions[i] == 4:
+                                    # east
+                                    if x_diff < 0:
+
+                                        self.move_toward_in_sight_range_team1[
+                                            i][t_id] += 1
+                                    else:
+                                        self.move_away_in_sight_range_team1[i][
+                                            t_id] += 1
+                                if actions[i] == 5:
+                                    # west
+                                    if x_diff > 0:
+                                        self.move_toward_in_sight_range_team1[
+                                            i][t_id] += 1
+                                    else:
+                                        self.move_away_in_sight_range_team1[i][
+                                            t_id] += 1
+
+            for i in range(self.n_enemies):
+                shoot_range = self.unit_shoot_range(self.n_agents + i)
+                sight_range = self.unit_sight_range(self.n_agents + i)
+                move_in_shoot_not_counted = True
+                move_in_sight_not_counted = True
+                action__ = actions[self.n_agents + i]
+                for t_id, t_unit in self.agents.items():
+                    if t_unit.health > 0:
+                        dist = self.distance(
+                            new_pos_team_2[i][0], new_pos_team_2[i][1],
+                            t_unit.pos.x, t_unit.pos.y
+                        )
+                        if dist <= shoot_range:
+                            self.once_in_shoot_range_opponent_team_2[i][
+                                t_id] = True
+                            if 1 < action__ < 6:
+                                if move_in_shoot_not_counted:
+                                    self.move_in_shoot_range_team2[i] += 1
+                                    move_in_shoot_not_counted = False
+                                x_diff = new_pos_team_2[i][0] - t_unit.pos.x
+                                y_diff = new_pos_team_2[i][1] - t_unit.pos.y
+                                if action__ == 2:
+                                    # north
+                                    if y_diff < 0:
+                                        self.move_toward_in_shoot_range_team2[
+                                            i][t_id] += 1
+                                    else:
+                                        self.move_away_in_shoot_range_team2[i][
+                                            t_id] += 1
+                                if action__ == 3:
+                                    # south
+                                    if y_diff > 0:
+                                        self.move_toward_in_shoot_range_team2[
+                                            i][t_id] += 1
+                                    else:
+                                        self.move_away_in_shoot_range_team2[i][
+                                            t_id] += 1
+                                if action__ == 4:
+                                    # east
+                                    if x_diff < 0:
+                                        self.move_toward_in_shoot_range_team2[
+                                            i][t_id] += 1
+                                    else:
+                                        self.move_away_in_shoot_range_team2[i][
+                                            t_id] += 1
+                                if action__ == 5:
+                                    # west
+                                    if x_diff > 0:
+                                        self.move_toward_in_shoot_range_team2[
+                                            i][t_id] += 1
+                                    else:
+                                        self.move_away_in_shoot_range_team2[i][
+                                            t_id] += 1
+                        elif dist <= sight_range:
+                            self.once_in_sight_range_opponent_team_2[i][
+                                t_id] = True
+                            if 1 < action__ < 6:
+                                if move_in_sight_not_counted:
+                                    self.move_in_sight_range_team2[i] += 1
+                                    move_in_sight_not_counted = False
+                                x_diff = new_pos_team_2[i][0] - t_unit.pos.x
+                                y_diff = new_pos_team_2[i][1] - t_unit.pos.y
+                                if action__ == 2:
+                                    # north
+                                    if y_diff < 0:
+                                        self.move_toward_in_sight_range_team2[
+                                            i][t_id] += 1
+                                    else:
+                                        self.move_away_in_sight_range_team2[i][
+                                            t_id] += 1
+                                if action__ == 3:
+                                    # south
+                                    if y_diff > 0:
+                                        self.move_toward_in_sight_range_team2[
+                                            i][t_id] += 1
+                                    else:
+                                        self.move_away_in_sight_range_team2[i][
+                                            t_id] += 1
+                                if action__ == 4:
+                                    # east
+                                    if x_diff < 0:
+
+                                        self.move_toward_in_sight_range_team2[
+                                            i][t_id] += 1
+                                    else:
+                                        self.move_away_in_sight_range_team2[i][
+                                            t_id] += 1
+                                if action__ == 5:
+                                    # west
+                                    if x_diff > 0:
+                                        self.move_toward_in_sight_range_team2[
+                                            i][t_id] += 1
+                                    else:
+                                        self.move_away_in_sight_range_team2[i][
+                                            t_id] += 1
+            for i in range(self.n_agents):
+                self.distance_traveled_team_1[i] += self.distance(
+                    self.previous_team_1_pos[i][0],
+                    self.previous_team_1_pos[i][1],
+                    new_pos_team_1[i][0],
+                    new_pos_team_1[i][1])
+                self.previous_team_1_pos[i][0] = new_pos_team_1[i][0]
+                self.previous_team_1_pos[i][1] = new_pos_team_1[i][1]
+
+            for i in range(self.n_enemies):
+                self.distance_traveled_team_2[i] += self.distance(
+                    self.previous_team_2_pos[i][0],
+                    self.previous_team_2_pos[i][1],
+                    new_pos_team_2[i][0],
+                    new_pos_team_2[i][1])
+                self.previous_team_2_pos[i][0] = new_pos_team_2[i][0]
+                self.previous_team_2_pos[i][1] = new_pos_team_2[i][1]
 
         self.last_action = np.eye(self.n_actions)[np.array(actions)]
 
@@ -279,48 +545,27 @@ class StarCraft2EnvMulti(StarCraft2Env):
         info = {"battle_won_team_1": False,
                 "battle_won_team_2": False}
 
-        new_pos_team_1 = []
-        new_pos_team_2 = []
-        for i in range(self.n_agents):
-            unit = self.get_unit_by_id(i)
-            new_pos_team_1.append((unit.pos.x, unit.pos.y))
-        for i in range(self.n_enemies):
-            unit = self.get_unit_by_id(self.n_agents + i)
-            new_pos_team_2.append((unit.pos.x, unit.pos.y))
-
-        for i in range(len(self.distance_traveled_team_1)):
-            self.distance_traveled_team_1[i] += self.distance(
-                self.previous_team_1_pos[i][0],
-                self.previous_team_1_pos[i][1],
-                new_pos_team_1[i][0],
-                new_pos_team_1[i][1])
-        for i in range(len(self.distance_traveled_team_2)):
-            self.distance_traveled_team_2[i] += self.distance(
-                self.previous_team_2_pos[i][0],
-                self.previous_team_2_pos[i][1],
-                new_pos_team_2[i][0],
-                new_pos_team_2[i][1])
-
         if game_end_code is not None:
             # Battle is over
             terminated = True
             self.battles_game += 1
-            center_x = self.map_x / 2
-            center_y = self.map_y / 2
-            pos_team_1 = []
-            pos_team_2 = []
-            for i in range(self.n_agents):
-                unit = self.get_unit_by_id(i)
-                pos_team_1.append(((
-                                           unit.pos.x - center_x) / self.max_distance_x,
-                                   (
-                                           unit.pos.y - center_y) / self.max_distance_y))
-            for i in range(self.n_enemies):
-                unit = self.get_unit_by_id(self.n_agents + i)
-                pos_team_2.append(((
-                                           unit.pos.x - center_x) / self.max_distance_x,
-                                   (
-                                           unit.pos.y - center_y) / self.max_distance_y))
+            if self.log_more_stats:
+                center_x = self.map_x / 2
+                center_y = self.map_y / 2
+                pos_team_1 = []
+                pos_team_2 = []
+                for i in range(self.n_agents):
+                    unit = self.get_unit_by_id(i)
+                    pos_team_1.append(((
+                                               unit.pos.x - center_x) / self.max_distance_x,
+                                       (
+                                               unit.pos.y - center_y) / self.max_distance_y))
+                for i in range(self.n_enemies):
+                    unit = self.get_unit_by_id(self.n_agents + i)
+                    pos_team_2.append(((
+                                               unit.pos.x - center_x) / self.max_distance_x,
+                                       (
+                                               unit.pos.y - center_y) / self.max_distance_y))
 
             if game_end_code == 1 and not self.win_counted:
                 self.win_counted = True
@@ -332,38 +577,76 @@ class StarCraft2EnvMulti(StarCraft2Env):
                 else:
                     reward[0] = 1
                     reward[1] = -1
+                if self.log_more_stats:
+                    # Records remaining health
+                    for i in range(self.n_agents):
+                        unit = self.get_unit_by_id(i)
+                        info["win_health_team_1_agent_" + str(
+                            i)] = unit.health / unit.health_max
+                        info["win_position_x_team_1_agent_" + str(
+                            i)] = pos_team_1[i][0]
+                        info["win_position_y_team_1_agent_" + str(
+                            i)] = pos_team_1[i][1]
+                        info["win_distance_traveled_team_1_agent_" + str(
+                            i)] = self.distance_traveled_team_1[i]
+                        info["win_attack_actions_team_1_agent_" + str(
+                            i)] = self.attack_actions_team_1[i]
+                        info["win_move_actions_team_1_agent_" + str(
+                            i)] = self.move_actions_team_1[i]
+                        info["win_stop_actions_team_1_agent_" + str(
+                            i)] = self.stop_actions_team_1[i]
+                        info[
+                            "win_once_in_shoot_range_opponent_team_1_agent_" + str(
+                                i)] = self.once_in_shoot_range_opponent_team_1[
+                            i]
+                        info[
+                            "win_once_in_sight_range_opponent_team_1_agent_" + str(
+                                i)] = self.once_in_sight_range_opponent_team_1[
+                            i]
+                        info["win_move_in_sight_range_team1_agent_" + str(i)] = \
+                        self.move_in_sight_range_team1[i]
+                        info[
+                            "win_move_toward_in_sight_range_team1_agent_" + str(
+                                i)] = self.move_toward_in_sight_range_team1[i]
+                        info["win_move_away_in_sight_range_team1_agent_" + str(
+                            i)] = self.move_away_in_sight_range_team1[i]
+                        info["win_move_in_shoot_range_team1_agent_" + str(i)] = \
+                        self.move_in_shoot_range_team1[i]
+                        info[
+                            "win_move_toward_in_shoot_range_team1_agent_" + str(
+                                i)] = self.move_toward_in_shoot_range_team1[i]
+                        info["win_move_away_in_shoot_range_team1_agent_" + str(
+                            i)] = self.move_away_in_shoot_range_team1[i]
 
-                # Records remaining health
-                for i in range(self.n_agents):
-                    unit = self.get_unit_by_id(i)
-                    info["win_health_team_1_agent_" + str(
-                        i)] = unit.health / unit.health_max
-                    info["win_position_x_team_1_agent_" + str(
-                        i)] = pos_team_1[i][0]
-                    info["win_position_y_team_1_agent_" + str(
-                        i)] = pos_team_1[i][1]
-                    info["win_distance_traveled_team_1_agent_" + str(
-                        i)] = self.distance_traveled_team_1[i]
-                    info["win_attack_actions_team_1_agent_" + str(
-                        i)] = self.attack_actions_team_1[i]
-                    info["win_move_actions_team_1_agent_" + str(
-                        i)] = self.move_actions_team_1[i]
-                    info["win_stop_actions_team_1_agent_" + str(
-                        i)] = self.stop_actions_team_1[i]
+                    for i in range(self.n_enemies):
+                        info["loss_position_x_team_2_agent_" + str(
+                            i)] = pos_team_2[i][0]
+                        info["loss_position_y_team_2_agent_" + str(
+                            i)] = pos_team_2[i][1]
+                        info["loss_distance_traveled_team_2_agent_" + str(
+                            i)] = self.distance_traveled_team_2[i]
+                        info["loss_attack_actions_team_2_agent_" + str(
+                            i)] = self.attack_actions_team_2[i]
+                        info["loss_move_actions_team_2_agent_" + str(
+                            i)] = self.move_actions_team_2[i]
+                        info["loss_stop_actions_team_2_agent_" + str(
+                            i)] = self.stop_actions_team_2[i]
+                        info[
+                            "loss_once_in_shoot_range_opponent_team_2_agent_" + str(
+                                i)] = self.once_in_shoot_range_opponent_team_2[
+                            i]
+                        info[
+                            "loss_once_in_sight_range_opponent_team_2_agent_" + str(
+                                i)] = self.once_in_sight_range_opponent_team_2[
+                            i]
+                        info["loss_move_in_sight_range_team2_agent_" + str(i)] = self.move_in_sight_range_team2[i]
+                        info["loss_move_toward_in_sight_range_team2_agent_" + str(i)] = self.move_toward_in_sight_range_team2[i]
+                        info["loss_move_away_in_sight_range_team2_agent_" + str(i)] = self.move_away_in_sight_range_team2[i]
+                        info["loss_move_in_shoot_range_team2_agent_" + str(i)] = self.move_in_shoot_range_team2[i]
+                        info["loss_move_toward_in_shoot_range_team2_agent_" + str(i)] = self.move_toward_in_shoot_range_team2[i]
+                        info["loss_move_away_in_shoot_range_team2_agent_" + str(i)] = self.move_away_in_shoot_range_team2[i]
 
-                for i in range(self.n_enemies):
-                    info["loss_position_x_team_2_agent_" + str(
-                        i)] = pos_team_2[i][0]
-                    info["loss_position_y_team_2_agent_" + str(
-                        i)] = pos_team_2[i][1]
-                    info["loss_distance_traveled_team_2_agent_" + str(
-                        i)] = self.distance_traveled_team_2[i]
-                    info["loss_attack_actions_team_2_agent_" + str(
-                        i)] = self.attack_actions_team_2[i]
-                    info["loss_move_actions_team_2_agent_" + str(
-                        i)] = self.move_actions_team_2[i]
-                    info["loss_stop_actions_team_2_agent_" + str(
-                        i)] = self.stop_actions_team_2[i]
+
 
             elif game_end_code == -1 and not self.defeat_counted:
                 self.defeat_counted = True
@@ -375,35 +658,82 @@ class StarCraft2EnvMulti(StarCraft2Env):
                 else:
                     reward[0] = -1
                     reward[1] = 1
-                for i in range(self.n_enemies):
-                    unit = self.get_unit_by_id(self.n_agents + i)
-                    info["win_health_team_2_agent_" + str(
-                        i)] = unit.health / unit.health_max
-                    info["win_position_x_team_2_agent_" + str(
-                        i)] = pos_team_2[i][0]
-                    info["win_position_y_team_2_agent_" + str(
-                        i)] = pos_team_2[i][1]
-                    info["win_distance_traveled_team_2_agent_" + str(
-                        i)] = self.distance_traveled_team_2[i]
-                    info["win_attack_actions_team_2_agent_" + str(
-                        i)] = self.attack_actions_team_2[i]
-                    info["win_move_actions_team_2_agent_" + str(
-                        i)] = self.move_actions_team_2[i]
-                    info["win_stop_actions_team_2_agent_" + str(
-                        i)] = self.stop_actions_team_2[i]
-                for i in range(self.n_agents):
-                    info["loss_position_x_team_1_agent_" + str(
-                        i)] = pos_team_1[i][0]
-                    info["loss_position_y_team_1_agent_" + str(
-                        i)] = pos_team_1[i][1]
-                    info["loss_distance_traveled_team_1_agent_" + str(
-                        i)] = self.distance_traveled_team_1[i]
-                    info["loss_attack_actions_team_1_agent_" + str(
-                        i)] = self.attack_actions_team_1[i]
-                    info["loss_move_actions_team_1_agent_" + str(
-                        i)] = self.move_actions_team_1[i]
-                    info["loss_stop_actions_team_1_agent_" + str(
-                        i)] = self.stop_actions_team_1[i]
+
+                if self.log_more_stats:
+                    for i in range(self.n_enemies):
+                        unit = self.get_unit_by_id(self.n_agents + i)
+                        info["win_health_team_2_agent_" + str(
+                            i)] = unit.health / unit.health_max
+                        info["win_position_x_team_2_agent_" + str(
+                            i)] = pos_team_2[i][0]
+                        info["win_position_y_team_2_agent_" + str(
+                            i)] = pos_team_2[i][1]
+                        info["win_distance_traveled_team_2_agent_" + str(
+                            i)] = self.distance_traveled_team_2[i]
+                        info["win_attack_actions_team_2_agent_" + str(
+                            i)] = self.attack_actions_team_2[i]
+                        info["win_move_actions_team_2_agent_" + str(
+                            i)] = self.move_actions_team_2[i]
+                        info["win_stop_actions_team_2_agent_" + str(
+                            i)] = self.stop_actions_team_2[i]
+                        info[
+                            "win_once_in_shoot_range_opponent_team_2_agent_" + str(
+                                i)] = self.once_in_shoot_range_opponent_team_2[
+                            i]
+                        info[
+                            "win_once_in_sight_range_opponent_team_2_agent_" + str(
+                                i)] = self.once_in_sight_range_opponent_team_2[
+                            i]
+                        info["win_move_in_sight_range_team2_agent_" + str(i)] = self.move_in_sight_range_team2[i]
+                        info["win_move_toward_in_sight_range_team2_agent_" + str(i)] = self.move_toward_in_sight_range_team2[i]
+                        info["win_move_away_in_sight_range_team2_agent_" + str(i)] = self.move_away_in_sight_range_team2[i]
+                        info["win_move_in_shoot_range_team2_agent_" + str(i)] = self.move_in_shoot_range_team2[i]
+                        info["win_move_toward_in_shoot_range_team2_agent_" + str(i)] = self.move_toward_in_shoot_range_team2[i]
+                        info["win_move_away_in_shoot_range_team2_agent_" + str(i)] = self.move_away_in_shoot_range_team2[i]
+
+
+                    for i in range(self.n_agents):
+                        info["loss_position_x_team_1_agent_" + str(
+                            i)] = pos_team_1[i][0]
+                        info["loss_position_y_team_1_agent_" + str(
+                            i)] = pos_team_1[i][1]
+                        info["loss_distance_traveled_team_1_agent_" + str(
+                            i)] = self.distance_traveled_team_1[i]
+                        info["loss_attack_actions_team_1_agent_" + str(
+                            i)] = self.attack_actions_team_1[i]
+                        info["loss_move_actions_team_1_agent_" + str(
+                            i)] = self.move_actions_team_1[i]
+                        info["loss_stop_actions_team_1_agent_" + str(
+                            i)] = self.stop_actions_team_1[i]
+                        info[
+                            "loss_once_in_shoot_range_opponent_team_1_agent_" + str(
+                                i)] = self.once_in_shoot_range_opponent_team_1[
+                            i]
+                        info[
+                            "loss_once_in_sight_range_opponent_team_1_agent_" + str(
+                                i)] = self.once_in_sight_range_opponent_team_1[
+                            i]
+                        info[
+                            "loss_move_in_sight_range_team1_agent_" + str(i)] = \
+                        self.move_in_sight_range_team1[i]
+                        info[
+                            "loss_move_toward_in_sight_range_team1_agent_" + str(
+                                i)] = self.move_toward_in_sight_range_team1[i]
+                        info[
+                            "loss_move_away_in_sight_range_team1_agent_" + str(
+                                i)] = self.move_away_in_sight_range_team1[i]
+                        info[
+                            "loss_move_in_shoot_range_team1_agent_" + str(i)] = \
+                        self.move_in_shoot_range_team1[i]
+                        info[
+                            "loss_move_toward_in_shoot_range_team1_agent_" + str(
+                                i)] = self.move_toward_in_shoot_range_team1[i]
+                        info[
+                            "loss_move_away_in_shoot_range_team1_agent_" + str(
+                                i)] = self.move_away_in_shoot_range_team1[i]
+
+
+
 
         elif self._episode_steps >= self.episode_limit:
             # Episode limit reached
@@ -412,57 +742,94 @@ class StarCraft2EnvMulti(StarCraft2Env):
                 info["episode_limit"] = True
             self.battles_game += 1
             self.timeouts += 1
+            if self.log_more_stats:
+                # Draw
+                center_x = self.map_x / 2
+                center_y = self.map_y / 2
+                pos_team_1 = []
+                pos_team_2 = []
+                for i in range(self.n_agents):
+                    unit = self.get_unit_by_id(i)
+                    pos_team_1.append(((
+                                               unit.pos.x - center_x) / self.max_distance_x,
+                                       (
+                                               unit.pos.y - center_y) / self.max_distance_y))
+                for i in range(self.n_enemies):
+                    unit = self.get_unit_by_id(self.n_agents + i)
+                    pos_team_2.append(((
+                                               unit.pos.x - center_x) / self.max_distance_x,
+                                       (
+                                               unit.pos.y - center_y) / self.max_distance_y))
 
-            # Draw
-            center_x = self.map_x / 2
-            center_y = self.map_y / 2
-            pos_team_1 = []
-            pos_team_2 = []
-            for i in range(self.n_agents):
-                unit = self.get_unit_by_id(i)
-                pos_team_1.append(((
-                                           unit.pos.x - center_x) / self.max_distance_x,
-                                   (
-                                           unit.pos.y - center_y) / self.max_distance_y))
-            for i in range(self.n_enemies):
-                unit = self.get_unit_by_id(self.n_agents + i)
-                pos_team_2.append(((
-                                           unit.pos.x - center_x) / self.max_distance_x,
-                                   (
-                                           unit.pos.y - center_y) / self.max_distance_y))
+                for i in range(self.n_agents):
+                    unit = self.get_unit_by_id(i)
+                    info["draw_health_team_1_agent_" + str(
+                        i)] = unit.health / unit.health_max
+                    info["draw_position_x_team_1_agent_" + str(
+                        i)] = pos_team_1[i][0]
+                    info["draw_position_y_team_1_agent_" + str(
+                        i)] = pos_team_1[i][1]
+                    info["draw_distance_traveled_team_1_agent_" + str(
+                        i)] = self.distance_traveled_team_1[i]
+                    info["draw_attack_actions_team_1_agent_" + str(
+                        i)] = self.attack_actions_team_1[i]
+                    info["draw_move_actions_team_1_agent_" + str(
+                        i)] = self.move_actions_team_1[i]
+                    info["draw_stop_actions_team_1_agent_" + str(
+                        i)] = self.stop_actions_team_1[i]
+                    info[
+                        "draw_once_in_shoot_range_opponent_team_1_agent_" + str(
+                            i)] = self.once_in_shoot_range_opponent_team_1[i]
+                    info[
+                        "draw_once_in_sight_range_opponent_team_1_agent_" + str(
+                            i)] = self.once_in_sight_range_opponent_team_1[i]
+                    info["draw_move_in_sight_range_team1_agent_" + str(i)] = \
+                    self.move_in_sight_range_team1[i]
+                    info["draw_move_toward_in_sight_range_team1_agent_" + str(
+                        i)] = self.move_toward_in_sight_range_team1[i]
+                    info["draw_move_away_in_sight_range_team1_agent_" + str(
+                        i)] = self.move_away_in_sight_range_team1[i]
+                    info["draw_move_in_shoot_range_team1_agent_" + str(i)] = \
+                    self.move_in_shoot_range_team1[i]
+                    info["draw_move_toward_in_shoot_range_team1_agent_" + str(
+                        i)] = self.move_toward_in_shoot_range_team1[i]
+                    info["draw_move_away_in_shoot_range_team1_agent_" + str(
+                        i)] = self.move_away_in_shoot_range_team1[i]
 
-            for i in range(self.n_agents):
-                unit = self.get_unit_by_id(i)
-                info["draw_health_team_1_agent_" + str(
-                    i)] = unit.health / unit.health_max
-                info["draw_position_x_team_1_agent_" + str(
-                    i)] = pos_team_1[i][0]
-                info["draw_position_y_team_1_agent_" + str(
-                    i)] = pos_team_1[i][1]
-                info["draw_distance_traveled_team_1_agent_" + str(
-                    i)] = self.distance_traveled_team_1[i]
-                info["draw_attack_actions_team_1_agent_" + str(
-                    i)] = self.attack_actions_team_1[i]
-                info["draw_move_actions_team_1_agent_" + str(
-                    i)] = self.move_actions_team_1[i]
-                info["draw_stop_actions_team_1_agent_" + str(
-                    i)] = self.stop_actions_team_1[i]
-            for i in range(self.n_enemies):
-                unit = self.get_unit_by_id(self.n_agents + i)
-                info["draw_health_team_2_agent_" + str(
-                    i)] = unit.health / unit.health_max
-                info["draw_position_x_team_2_agent_" + str(
-                    i)] = pos_team_2[i][0]
-                info["draw_position_y_team_2_agent_" + str(
-                    i)] = pos_team_2[i][1]
-                info["draw_distance_traveled_team_2_agent_" + str(
-                    i)] = self.distance_traveled_team_2[i]
-                info["draw_attack_actions_team_2_agent_" + str(
-                    i)] = self.attack_actions_team_2[i]
-                info["draw_move_actions_team_2_agent_" + str(
-                    i)] = self.move_actions_team_2[i]
-                info["draw_stop_actions_team_2_agent_" + str(
-                    i)] = self.stop_actions_team_2[i]
+                for i in range(self.n_enemies):
+                    unit = self.get_unit_by_id(self.n_agents + i)
+                    info["draw_health_team_2_agent_" + str(
+                        i)] = unit.health / unit.health_max
+                    info["draw_position_x_team_2_agent_" + str(
+                        i)] = pos_team_2[i][0]
+                    info["draw_position_y_team_2_agent_" + str(
+                        i)] = pos_team_2[i][1]
+                    info["draw_distance_traveled_team_2_agent_" + str(
+                        i)] = self.distance_traveled_team_2[i]
+                    info["draw_attack_actions_team_2_agent_" + str(
+                        i)] = self.attack_actions_team_2[i]
+                    info["draw_move_actions_team_2_agent_" + str(
+                        i)] = self.move_actions_team_2[i]
+                    info["draw_stop_actions_team_2_agent_" + str(
+                        i)] = self.stop_actions_team_2[i]
+                    info[
+                        "draw_once_in_shoot_range_opponent_team_2_agent_" + str(
+                            i)] = self.once_in_shoot_range_opponent_team_2[i]
+                    info[
+                        "draw_once_in_sight_range_opponent_team_2_agent_" + str(
+                            i)] = self.once_in_sight_range_opponent_team_2[i]
+                    info["draw_move_in_sight_range_team2_agent_" + str(i)] = \
+                    self.move_in_sight_range_team2[i]
+                    info["draw_move_toward_in_sight_range_team2_agent_" + str(
+                        i)] = self.move_toward_in_sight_range_team2[i]
+                    info["draw_move_away_in_sight_range_team2_agent_" + str(
+                        i)] = self.move_away_in_sight_range_team2[i]
+                    info["draw_move_in_shoot_range_team2_agent_" + str(i)] = \
+                    self.move_in_shoot_range_team2[i]
+                    info["draw_move_toward_in_shoot_range_team2_agent_" + str(
+                        i)] = self.move_toward_in_shoot_range_team2[i]
+                    info["draw_move_away_in_shoot_range_team2_agent_" + str(
+                        i)] = self.move_away_in_shoot_range_team2[i]
 
         if self.debug:
             logging.debug("Reward = {}".format(reward).center(60, '-'))
