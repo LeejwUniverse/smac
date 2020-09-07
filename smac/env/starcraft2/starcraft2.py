@@ -294,6 +294,7 @@ class StarCraft2Env(MultiAgentEnv):
         self._run_config = None
         self._sc2_proc = None
         self._controller = None
+        self.action_error=0
 
         # Try to avoid leaking SC2 processes on shutdown
         atexit.register(lambda: self.close())
@@ -328,6 +329,7 @@ class StarCraft2Env(MultiAgentEnv):
         map_info = game_info.start_raw
         map_play_area_min = map_info.playable_area.p0
         map_play_area_max = map_info.playable_area.p1
+
         self.max_distance_x = map_play_area_max.x - map_play_area_min.x
         self.max_distance_y = map_play_area_max.y - map_play_area_min.y
         self.map_x = map_info.map_size.x
@@ -398,8 +400,11 @@ class StarCraft2Env(MultiAgentEnv):
     def full_restart(self):
         """Full restart. Closes the SC2 process and launches a new one. """
         self._sc2_proc.close()
-        self._launch()
-        self.force_restarts += 1
+        try:
+            self._launch()
+            self.force_restarts += 1
+        except:
+            self.full_restart()
 
     def step(self, actions):
         """A single environment step. Returns reward, terminated, info."""
@@ -411,14 +416,19 @@ class StarCraft2Env(MultiAgentEnv):
         sc_actions = []
         if self.debug:
             logging.debug("Actions".center(60, "-"))
-
-        for a_id, action in enumerate(actions):
-            if not self.heuristic_ai:
-                agent_action = self.get_agent_action(a_id, action)
-            else:
-                agent_action = self.get_agent_action_heuristic(a_id, action)
-            if agent_action:
-                sc_actions.append(agent_action)
+        try:
+            for a_id, action in enumerate(actions):
+                if not self.heuristic_ai:
+                    agent_action = self.get_agent_action(a_id, action)
+                else:
+                    agent_action = self.get_agent_action_heuristic(a_id, action)
+                if agent_action:
+                    sc_actions.append(agent_action)
+        except AssertionError as err:
+            self._episode_count += 1
+            self.action_error += 1
+            self.reset()
+            return 0, True, {"env_error": True}
 
         # Send action request
         req_actions = sc_pb.RequestAction(actions=sc_actions)
@@ -430,7 +440,7 @@ class StarCraft2Env(MultiAgentEnv):
             self._obs = self._controller.observe()
         except (protocol.ProtocolError, protocol.ConnectionError):
             self.full_restart()
-            return 0, True, {}
+            return 0, True, {"env_error": True}
 
         self._total_steps += 1
         self._episode_steps += 1
