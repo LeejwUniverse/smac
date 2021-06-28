@@ -1673,6 +1673,11 @@ class StarCraft2EnvMulti(StarCraft2Env):
                 logging.debug("Last actions {}".format(self.last_action))
         return state, state_enemy
 
+    def get_unit_type_id(self, unit, ally):
+        """Returns the ID of unit type in the given scenario."""
+
+        return unit.unit_type - self._min_unit_type
+
     def get_obs_size(self):
         """
         Returns the sizes of the observation.
