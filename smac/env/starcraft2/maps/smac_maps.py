@@ -131,6 +131,15 @@ map_param_registry = {
         "unit_type_bits": 3,
         "map_type": "MMM",
     },
+    "MMM_multi": {
+        "n_agents": 10,
+        "n_enemies": 10,
+        "limit": 150,
+        "a_race": "T",
+        "b_race": "T",
+        "unit_type_bits": 3,
+        "map_type": "MMM",
+    },
     "MMM2": {
         "n_agents": 10,
         "n_enemies": 12,
@@ -141,6 +150,15 @@ map_param_registry = {
         "map_type": "MMM",
     },
     "2s3z": {
+        "n_agents": 5,
+        "n_enemies": 5,
+        "limit": 120,
+        "a_race": "P",
+        "b_race": "P",
+        "unit_type_bits": 2,
+        "map_type": "stalkers_and_zealots",
+    },
+    "2s3z_multi": {
         "n_agents": 5,
         "n_enemies": 5,
         "limit": 120,
