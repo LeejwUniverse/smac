@@ -1701,8 +1701,8 @@ class StarCraft2EnvMulti(StarCraft2Env):
         if self.obs_own_position:
             own_feats += 2
 
-        if self.obs_last_action:
-            last_action_feats = self.n_actions
+   
+        last_action_feats = self.n_actions
 
         move_feats = self.n_actions_move
         if self.obs_pathing_grid:
